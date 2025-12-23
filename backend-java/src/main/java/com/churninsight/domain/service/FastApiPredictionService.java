@@ -11,7 +11,11 @@ public class FastApiPredictionService implements PredictionService {
 
     @Override
     public PredictionResponse predict(PredictionRequest request) {
-        //Por ahora devolvemos un objeto vacío para evitar el error de compilación
-        return new PredictionResponse("Pendiente de integración real", 0.0);
+        // Por ahora devolvemos un objeto vacío para evitar el error de compilación
+        return new PredictionResponse(
+            request.getCustomerId(),
+            "Pendiente de integración real",
+            0.0
+        );
     }
 }
