@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-12-28T14:44:52.403483",
+  "model_file": "C:\\Users\\ariel\\OneDrive\\Documentos\\GitHub\\churninsight-platform\\data-science\\models\\churn_model.pkl",
+  "model_exists": true,
+  "model_size_mb": 0.7231855392456055,
+  "checks": {
+    "Model Loadable": true,
+    "Metrics Available": true,
+    "Performance Valid": true,
+    "Predictions Working": true
+  },
+  "all_passed": true
+}

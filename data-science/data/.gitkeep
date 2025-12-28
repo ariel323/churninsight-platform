@@ -1,3 +1,0 @@
-# Placeholder para mantener la carpeta data/ en git
-# Esta carpeta contendrá los datasets para entrenamiento y pruebas
-# Los archivos .csv reales se excluyen en .gitignore

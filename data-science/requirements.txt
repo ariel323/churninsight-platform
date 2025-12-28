@@ -1,36 +1,11 @@
-# Dependencias de Python para el proyecto de Data Science
-# Instalar con: pip install -r requirements.txt
-# Requiere: Python 3.11+
-
-# Core Data Science
-numpy>=1.24.0
-pandas>=2.0.0
-scikit-learn>=1.3.0
-
-# Visualización
-matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.14.0
-
-# Jupyter
-jupyter>=1.0.0
-ipykernel>=6.25.0
-notebook>=7.0.0
-
-# Utilidades
-joblib>=1.3.0
-tqdm>=4.65.0
-
-# Opcional: Deep Learning (descomentar si es necesario)
-# tensorflow>=2.13.0
-# torch>=2.0.0
-
-# Testing y calidad de código
-pytest>=7.4.0
-flake8>=6.0.0
-
-# Evolución futura: Microservicio de predicción
-# Descomentar cuando se implemente el modo target (FastAPI + Redis)
-# fastapi>=0.104.0
-# uvicorn>=0.24.0
-# redis>=5.0.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.0
+joblib==1.4.2
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+# matplotlib==3.8.4  # Commented out due to build issues
+seaborn==0.13.2
+pytest==8.0.0
+jupyter==1.0.0

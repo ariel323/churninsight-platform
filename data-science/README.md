@@ -1,117 +1,131 @@
-# Data Science - ChurnInsight
+# ChurnInsight - Data Science Module
 
-Esta carpeta contiene todo el trabajo de ciencia de datos: exploración, entrenamiento y artefactos del modelo de predicción de churn.
+Este módulo contiene el código para análisis, entrenamiento y servicio de predicción de churn en la plataforma ChurnInsight.
 
-## 🚀 Inicio Rápido
-
-### 1. Configurar el entorno
-
-```bash
-# Crear entorno virtual
-python -m venv venv
-
-# Activar entorno (Windows)
-venv\Scripts\activate
-
-# Activar entorno (Linux/Mac)
-source venv/bin/activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-```
-
-### 2. Explorar los datos
-
-```bash
-jupyter notebook notebooks/01_exploracion_datos.ipynb
-```
-
-### 3. Entrenar el modelo
-
-```bash
-# Desde notebooks
-jupyter notebook notebooks/02_entrenamiento_modelo.ipynb
-
-# O desde scripts
-python scripts/train.py --data data/dataset.csv --output model/modelo_churn.joblib
-```
-
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 data-science/
-├── README.md                          # Este archivo
-├── requirements.txt                   # Dependencias de Python
-├── data/                              # Datasets (no subir a git si son grandes)
-│   └── .gitkeep
-├── notebooks/                         # Notebooks de Jupyter
-│   ├── 01_exploracion_datos.ipynb    # Análisis exploratorio
-│   └── 02_entrenamiento_modelo.ipynb # Entrenamiento del modelo
-├── scripts/                           # Scripts de Python reutilizables
-│   ├── train.py                       # Script de entrenamiento
-│   └── predict.py                     # Script de predicción
-└── model/                             # Modelos entrenados (.joblib, .pkl, .h5, etc.)
-    ├── .gitkeep
-    └── MODEL_INFO.md                  # Documentación del modelo
+├── data/                    # Datasets y archivos de datos
+├── models/                  # Modelos entrenados serializados
+├── notebooks/              # Notebooks de Jupyter para análisis exploratorio
+├── src/                    # Código fuente Python
+│   ├── __init__.py
+│   ├── config.py           # Configuración y constantes
+│   ├── data_utils.py       # Utilidades de procesamiento de datos
+│   ├── model_trainer.py    # Clase para entrenamiento de modelos
+│   └── model_service.py    # Servicio FastAPI para predicciones
+├── scripts/                # Scripts ejecutables
+│   ├── train_model.py      # Script para entrenar el modelo
+│   └── start_service.py    # Script para iniciar el servicio
+├── tests/                  # Tests unitarios
+│   └── test_data_utils.py
+├── requirements.txt        # Dependencias Python
+└── README.md              # Esta documentación
 ```
 
-## 📊 Flujo de Trabajo
+## Instalación y Configuración
 
-1. **Exploración de Datos**: Usar `01_exploracion_datos.ipynb` para entender el dataset
-2. **Feature Engineering**: Diseñar y crear features relevantes
-3. **Entrenamiento**: Entrenar modelos usando `02_entrenamiento_modelo.ipynb` o `scripts/train.py`
-4. **Evaluación**: Comparar métricas (accuracy, precision, recall, ROC-AUC)
-5. **Exportación**: Guardar el mejor modelo en formato `.joblib` (o `.pkl`) en la carpeta `model/`
-6. **Integración**: El backend Java cargará el modelo para hacer predicciones
+### Prerrequisitos
 
-## 🔧 Scripts Disponibles
+- Python 3.9+
+- pip
 
-### train.py
+### Instalación
 
-Entrena el modelo de predicción de churn.
+1. Instalar dependencias:
 
 ```bash
-python scripts/train.py --data data/dataset.csv --output model/churn_model.pkl --test-size 0.2
+pip install -r requirements.txt
 ```
 
-### predict.py
+## Uso
 
-Realiza predicciones usando un modelo entrenado.
+### Entrenamiento del Modelo
+
+Para entrenar el modelo con los datos actuales:
 
 ```bash
-python scripts/predict.py --model model/churn_model.pkl --input data/nuevos_clientes.csv --output predictions.csv
+python scripts/train_model.py
 ```
 
-## 📈 Métricas Objetivo
+### Iniciar Servicio de Predicción
 
-- **Métrica principal**: ROC-AUC Score
-- **Métricas secundarias**: Precision, Recall, F1-Score
-- **Umbral de producción**: ROC-AUC > 0.75
+Para iniciar el servicio FastAPI:
 
-## 📝 Documentación de Modelos
+```bash
+python scripts/start_service.py
+```
 
-Cuando entrenes un modelo, documenta:
+El servicio estará disponible en `http://localhost:8000`
 
-- **Features utilizadas**: Lista completa de variables
-- **Versión de datos**: Fecha y fuente del dataset
-- **Hiperparámetros**: Configuración del modelo
-- **Métricas obtenidas**: Resultados de evaluación
-- **Fecha de entrenamiento**: Cuándo se entrenó
+### API Endpoints
 
-Ejemplo: Crear un archivo `model/modelo_v1_info.txt` con esta información.
+- `GET /` - Información del servicio
+- `GET /health` - Health check
+- `POST /predict` - Predicción de churn
 
-## ⚠️ Buenas Prácticas
+#### Ejemplo de Request
 
-- ✅ **Versionar código**, no datos grandes ni modelos pesados
-- ✅ Usar `.gitignore` para excluir datasets crudos y modelos grandes
-- ✅ Documentar cada experimento en los notebooks
-- ✅ Mantener scripts actualizados y funcionales
-- ✅ Usar semillas aleatorias (`random_state`) para reproducibilidad
-- ❌ No subir archivos `.csv` o `.pkl` > 10 MB sin acordarlo con el equipo
+```json
+{
+  "customer_id": "12345",
+  "monthly_charges": 65.5,
+  "tenure_months": 24,
+  "contract_type": "month-to-month",
+  "internet_service": "fiber_optic",
+  "total_charges": 1572.0
+}
+```
 
-## 🔗 Integración con Backend
+#### Ejemplo de Response
 
-El modelo entrenado se exporta en formato `.pkl` (pickle) y el backend Java lo consumirá a través de:
+```json
+{
+  "customer_id": "12345",
+  "prevision": "alto_riesgo",
+  "probabilidad": 0.87
+}
+```
 
-- API REST para predicciones en tiempo real
-- Carga del modelo usando Jython o servicios externos (Python microservice)
+## Desarrollo
+
+### Estructura del Código
+
+- **`config.py`**: Configuración centralizada del proyecto
+- **`data_utils.py`**: Funciones para carga y procesamiento de datos
+- **`model_trainer.py`**: Clase para entrenamiento y gestión de modelos
+- **`model_service.py`**: Servicio FastAPI para predicciones en producción
+
+### Tests
+
+Ejecutar tests:
+
+```bash
+python -m pytest tests/
+```
+
+## Arquitectura
+
+El módulo sigue una arquitectura modular:
+
+1. **Carga de Datos**: Utilidades para cargar y preprocesar datos
+2. **Entrenamiento**: Pipeline de ML para entrenar modelos
+3. **Servicio**: API REST para servir predicciones
+4. **Configuración**: Configuración centralizada
+
+## Métricas del Modelo
+
+El modelo actual (Random Forest) alcanza las siguientes métricas:
+
+- **Accuracy**: ~95%
+- **Precision**: Alto para ambas clases
+- **Recall**: Bueno para detección de churn
+
+## Próximos Pasos
+
+- [ ] Implementar validación cruzada
+- [ ] Añadir más algoritmos de ML
+- [ ] Implementar monitoring del modelo
+- [ ] Añadir tests de integración
+- [ ] Documentar API con OpenAPI
