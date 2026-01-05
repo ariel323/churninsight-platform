@@ -44,3 +44,13 @@ package-lock.json
 *.log
 logs/
 *.tmp
+
+# Backend: Excluir archivos de conexión Java con modelo ML
+backend-java/src/main/java/com/churninsight/service/ChurnPredictionService.java
+backend-java/src/main/java/com/churninsight/controller/ChurnController.java
+backend-java/src/main/java/com/churninsight/controller/StatsController.java
+backend-java/src/main/java/com/churninsight/dto/ChurnPredictionResponse.java
+backend-java/src/main/java/com/churninsight/model/ChurnInput.java
+backend-java/src/main/java/com/churninsight/model/ChurnInputRepository.java
+backend-java/src/main/java/com/churninsight/model/ChurnPrediction.java
+backend-java/src/main/java/com/churninsight/model/ChurnPredictionRepository.java
