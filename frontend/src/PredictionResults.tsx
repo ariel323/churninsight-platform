@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, lazy, Suspense, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import {
   CheckCircle,
@@ -20,27 +21,10 @@ import {
   TrendingDown,
   Psychology,
 } from "@mui/icons-material";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Area,
-  AreaChart,
-} from "recharts";
 import { ChurnPredictionResponse } from "./types";
+
+// Lazy load de gráficos pesados
+const ChartsSection = lazy(() => import("./components/ChartsSection"));
 
 interface PredictionResultsProps {
   prediction: ChurnPredictionResponse | null;
@@ -130,11 +114,11 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
   const riskLevel = isHighRisk ? "ALTO" : isMediumRisk ? "MEDIO" : "BAJO";
   const riskColor = isHighRisk ? "error" : isMediumRisk ? "warning" : "success";
   const riskIcon = isHighRisk ? (
-    <Warning />
+    <Warning aria-label="Advertencia de alto riesgo" />
   ) : isMediumRisk ? (
-    <TrendingDown />
+    <TrendingDown aria-label="Tendencia de riesgo medio" />
   ) : (
-    <CheckCircle />
+    <CheckCircle aria-label="Éxito, bajo riesgo" />
   );
 
   return (
@@ -174,6 +158,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
           </Box>
           <Chip
             label={`RIESGO ${riskLevel}`}
+            aria-label={`Nivel de riesgo ${riskLevel}`}
             sx={{
               fontSize: "1.2rem",
               fontWeight: "bold",
@@ -275,145 +260,21 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
         </Box>
       </Box>
 
-      {/* Gráficos de Análisis */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mt: 2 }}>
-        <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "320px" }}>
-          <Card
-            sx={{
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                📊 Distribución del Riesgo
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name} ${((percent || 0) * 100).toFixed(0)}%`
-                    }
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: any) => [`${value.toFixed(2)}%`, ""]}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "320px" }}>
-          <Card
-            sx={{
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                📈 Probabilidad vs Umbral
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip
-                    formatter={(value: any) => [
-                      `${value.toFixed(2)}%`,
-                      "Probabilidad",
-                    ]}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill={barData[0].color}
-                    radius={[8, 8, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "320px" }}>
-          <Card
-            sx={{
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                🎯 Perfil del Cliente
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={radarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" />
-                  <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                  <Radar
-                    name="Score"
-                    dataKey="A"
-                    stroke="#1976d2"
-                    fill="#1976d2"
-                    fillOpacity={0.6}
-                  />
-                  <Tooltip />
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "320px" }}>
-          <Card
-            sx={{
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                📉 Tendencia de Retención
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip
-                    formatter={(value: any) => [
-                      `${value.toFixed(1)}%`,
-                      "Score",
-                    ]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="score"
-                    stroke="#2e7d32"
-                    fill="#4caf50"
-                    fillOpacity={0.6}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
+      {/* Gráficos de Análisis - Lazy Loaded */}
+      <Suspense
+        fallback={
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress />
+          </Box>
+        }
+      >
+        <ChartsSection
+          barData={barData}
+          pieData={pieData}
+          radarData={radarData}
+          trendData={trendData}
+        />
+      </Suspense>
 
       {/* Recomendaciones */}
       <Card

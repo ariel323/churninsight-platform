@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   TextField,
   Button,
@@ -53,36 +53,43 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
     },
   });
 
-  const onFormSubmit = (data: ClientFormData) => {
-    // Transformar los datos del usuario a los parámetros del modelo
-    const ageRisk = data.age >= 40 && data.age <= 70 ? 1 : 0;
-    const inactivo4070 =
-      data.age >= 40 && data.age <= 70 && data.isActiveMember === 0 ? 1 : 0;
-    const productsRiskFlag = data.numOfProducts >= 3 ? 1 : 0;
-    const countryRiskFlag = data.country === "Germany" ? 1 : 0;
+  const onFormSubmit = useCallback(
+    (data: ClientFormData) => {
+      // Transformar los datos del usuario a los parámetros del modelo
+      const ageRisk = data.age >= 40 && data.age <= 70 ? 1 : 0;
+      const inactivo4070 =
+        data.age >= 40 && data.age <= 70 && data.isActiveMember === 0 ? 1 : 0;
+      const productsRiskFlag = data.numOfProducts >= 3 ? 1 : 0;
+      const countryRiskFlag = data.country === "Germany" ? 1 : 0;
 
-    const modelData: ChurnFormData = {
-      ageRisk,
-      numOfProducts: data.numOfProducts,
-      inactivo4070,
-      productsRiskFlag,
-      countryRiskFlag,
-    };
+      const modelData: ChurnFormData = {
+        ageRisk,
+        numOfProducts: data.numOfProducts,
+        inactivo4070,
+        productsRiskFlag,
+        countryRiskFlag,
+      };
 
-    onSubmit(modelData);
-  };
+      onSubmit(modelData);
+    },
+    [onSubmit]
+  );
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onFormSubmit)} sx={{ mt: 3 }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onFormSubmit)}
+      sx={{ mt: { xs: 2, sm: 3 } }}
+    >
       <Paper
         elevation={1}
         sx={{
-          p: 3,
-          borderRadius: 8,
+          p: { xs: 2.5, sm: 3 },
+          borderRadius: { xs: 4, sm: 8 },
           boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
           border: "1px solid #e0e0e0",
           bgcolor: "background.paper",
-          mb: 4,
+          mb: { xs: 3, sm: 4 },
         }}
       >
         <Typography
@@ -107,27 +114,38 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
       <Paper
         elevation={1}
         sx={{
-          p: 4,
-          mb: 3,
+          p: { xs: 2.5, sm: 4 },
+          mb: { xs: 2, sm: 3 },
           border: "1px solid #e0e0e0",
           bgcolor: "background.paper",
-          borderRadius: 2,
+          borderRadius: { xs: 1.5, sm: 2 },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Info sx={{ mr: 1, color: "#234567", fontSize: 20 }} />
-          <Typography variant="h6" sx={{ color: "#000000", fontWeight: 600 }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", mb: { xs: 2, sm: 3 } }}
+        >
+          <Info
+            sx={{ mr: 1, color: "#234567", fontSize: { xs: 18, sm: 20 } }}
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#000000",
+              fontWeight: 600,
+              fontSize: { xs: "1.1rem", sm: "1.25rem" },
+            }}
+          >
             Información del Cliente
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ mb: { xs: 2, sm: 3 } }} />
 
         <Box
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-            gap: 3,
+            gap: { xs: 2.5, sm: 3 },
           }}
         >
           {/* Edad */}
@@ -250,17 +268,25 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
         </Box>
       </Paper>
 
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+      <Box
+        sx={{
+          mt: { xs: 3, sm: 4 },
+          display: "flex",
+          justifyContent: "center",
+          px: { xs: 2, sm: 0 },
+        }}
+      >
         <Button
           type="submit"
           variant="contained"
           size="large"
           disabled={loading}
           sx={{
-            px: 6,
+            px: { xs: 4, sm: 6 },
             py: 1.5,
-            fontSize: "1.1rem",
-            minWidth: 250,
+            fontSize: { xs: "1rem", sm: "1.1rem" },
+            minWidth: { xs: "100%", sm: 250 },
+            maxWidth: { xs: "100%", sm: "none" },
             bgcolor: "#5a6c7d",
             color: "#ffffff",
             fontWeight: 600,

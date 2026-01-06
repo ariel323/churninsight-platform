@@ -19,8 +19,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "build:analyze": "npm run build && npx source-map-explorer \"build/static/js/*.js\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -46,6 +47,10 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "compression-webpack-plugin": "^11.1.0",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.2.1",
     "typescript": "^4.9.5"
   }
 }

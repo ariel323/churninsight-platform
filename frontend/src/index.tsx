@@ -1,11 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
@@ -13,4 +12,9 @@ root.render(
   </React.StrictMode>
 );
 
-reportWebVitals();
+// Solo reportar métricas en producción
+if (process.env.NODE_ENV === "production") {
+  import("./reportWebVitals").then(({ default: reportWebVitals }) => {
+    reportWebVitals();
+  });
+}

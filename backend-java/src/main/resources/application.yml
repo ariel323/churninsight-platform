@@ -7,9 +7,9 @@ spring:
 
   # Configuración de MySQL
   datasource:
-    url: jdbc:mysql://localhost:3306/churninsight?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-    username: 
-    password: 
+    url: ${DB_URL:jdbc:mysql://localhost:3306/churninsight?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -46,4 +46,4 @@ management:
 
 # URL del servicio Python que expone el modelo (FastAPI)
 python-service:
-  url: http://localhost:8000
+  url: ${PYTHON_SERVICE_URL:http://localhost:8000}

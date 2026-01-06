@@ -7,36 +7,36 @@ const theme = createTheme({
       main: "#234567",
       light: "#e3e8ee",
       dark: "#1a2533",
-      contrastText: "#1a2533",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#6b7a8f",
+      main: "#5a6c7d",
       light: "#f5f7fa",
       dark: "#3a4c5d",
-      contrastText: "#1a2533",
+      contrastText: "#ffffff",
     },
     success: {
-      main: "#3a7d5c",
+      main: "#2e7d32",
       light: "#e6f4ea",
-      dark: "#1b4332",
+      dark: "#1b5e20",
     },
     error: {
-      main: "#b71c1c",
+      main: "#c62828",
       light: "#fbe9e7",
-      dark: "#8b0000",
+      dark: "#b71c1c",
     },
     warning: {
-      main: "#c77700",
+      main: "#d97706",
       light: "#fff8e1",
-      dark: "#9a5f00",
+      dark: "#b45309",
     },
     background: {
       default: "#f7f9fb",
       paper: "#ffffff",
     },
     text: {
-      primary: "#1a2533",
-      secondary: "#6b7a8f",
+      primary: "#1a1a1a",
+      secondary: "#4a5568",
     },
   },
   typography: {
@@ -45,22 +45,48 @@ const theme = createTheme({
       fontWeight: 700,
       fontSize: "2.5rem",
       lineHeight: 1.2,
+      "@media (max-width:600px)": {
+        fontSize: "1.75rem",
+      },
     },
     h4: {
       fontWeight: 600,
       fontSize: "2rem",
+      "@media (max-width:600px)": {
+        fontSize: "1.5rem",
+      },
     },
     h5: {
       fontWeight: 600,
       fontSize: "1.5rem",
+      "@media (max-width:600px)": {
+        fontSize: "1.25rem",
+      },
     },
     h6: {
       fontWeight: 600,
       fontSize: "1.25rem",
+      "@media (max-width:600px)": {
+        fontSize: "1.1rem",
+      },
     },
     body1: {
       fontSize: "1rem",
       lineHeight: 1.5,
+      "@media (max-width:600px)": {
+        fontSize: "0.95rem",
+        lineHeight: 1.6,
+      },
+    },
+    body2: {
+      "@media (max-width:600px)": {
+        fontSize: "0.875rem",
+      },
+    },
+    caption: {
+      "@media (max-width:600px)": {
+        fontSize: "0.75rem",
+      },
     },
   },
   shape: {
@@ -79,10 +105,20 @@ const theme = createTheme({
           "&:hover": {
             boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
           },
+          "@media (max-width:600px)": {
+            padding: "12px 20px",
+            fontSize: "0.95rem",
+            minHeight: "48px",
+          },
         },
         sizeLarge: {
           padding: "12px 32px",
           fontSize: "1.1rem",
+          "@media (max-width:600px)": {
+            padding: "14px 24px",
+            fontSize: "1rem",
+            minHeight: "52px",
+          },
         },
       },
     },
@@ -93,6 +129,20 @@ const theme = createTheme({
             borderRadius: 8,
             "&:hover fieldset": {
               borderColor: "#1976d2",
+            },
+            "@media (max-width:600px)": {
+              fontSize: "16px",
+            },
+          },
+          "& .MuiOutlinedInput-input": {
+            "@media (max-width:600px)": {
+              padding: "14px 12px",
+              fontSize: "16px",
+            },
+          },
+          "& .MuiInputLabel-root": {
+            "@media (max-width:600px)": {
+              fontSize: "16px",
             },
           },
         },

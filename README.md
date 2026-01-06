@@ -26,34 +26,6 @@
                         └─────────────┘
 ```
 
-### Frontend
-
-| Tecnología  | Descripción              |
-| ----------- | ------------------------ |
-| React 18    | Framework de UI          |
-| TypeScript  | Tipado estático          |
-| Material UI | Componentes visuales     |
-| JWT         | Autenticación en cliente |
-
-### Backend
-
-| Tecnología      | Descripción                  |
-| --------------- | ---------------------------- |
-| Java 17+        | Lenguaje base                |
-| Spring Boot 3.x | Framework REST               |
-| Spring Security | Autenticación y autorización |
-| JPA/Hibernate   | ORM y persistencia           |
-| MySQL 8+        | Base de datos relacional     |
-
-### Data Science
-
-| Tecnología        | Descripción                       |
-| ----------------- | --------------------------------- |
-| Python 3.10+      | Scripts de entrenamiento          |
-| Jupyter Notebooks | Exploración y análisis            |
-| PMML              | Formato de exportación de modelos |
-| FastAPI           | API de predicción (opcional)      |
-
 ---
 
 ## 📁 Estructura del Repositorio
@@ -113,7 +85,7 @@ churninsight-platform/
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 > Accede a `http://localhost:3000`
@@ -166,10 +138,11 @@ python api/main.py
 | Nombre             | Rol                     |
 | ------------------ | ----------------------- |
 | **Ariel323**       | Owner, Backend/Frontend |
-| Gabriel Méndez     | Desarrollo              |
+| Gabriel Méndez     | data science            |
+| Diego García       | Data Science            |
 | Martin Abreu       | Desarrollo              |
 | Alexandra Garavito | Backend                 |
-| Daniel             | Backend                 |
+
 
 ---
 

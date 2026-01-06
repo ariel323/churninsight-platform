@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect, lazy, Suspense, useCallback } from "react";
 import {
   ThemeProvider,
   CssBaseline,
@@ -11,6 +11,7 @@ import {
   Fade,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import {
   Assessment,
@@ -21,11 +22,15 @@ import {
 } from "@mui/icons-material";
 import theme from "./theme";
 import PredictionForm from "./PredictionForm";
-import PredictionResults from "./PredictionResults";
 import { predictChurn, fetchStats } from "./services/api";
 import { ChurnPredictionRequest, ChurnPredictionResponse } from "./types";
-import { Header, DashboardPanel, HistoryPanel } from "./components";
+import { Header } from "./components";
 import Login from "./components/Login";
+
+// Lazy loading de componentes pesados
+const PredictionResults = lazy(() => import("./PredictionResults"));
+const DashboardPanel = lazy(() => import("./components/DashboardPanel"));
+const HistoryPanel = lazy(() => import("./components/HistoryPanel"));
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -94,12 +99,12 @@ function App() {
     loadStats();
   }, [isAuthenticated]);
 
-  const handleLoginSuccess = (token: string, user: string) => {
+  const handleLoginSuccess = useCallback((token: string, user: string) => {
     setIsAuthenticated(true);
     setUsername(user);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     setIsAuthenticated(false);
@@ -107,37 +112,43 @@ function App() {
     setPrediction(null);
     setError(null);
     setTabValue(0);
-  };
+  }, []);
 
-  const handlePrediction = async (formData: ChurnPredictionRequest) => {
-    setLoading(true);
-    setError(null);
-    setPrediction(null);
+  const handlePrediction = useCallback(
+    async (formData: ChurnPredictionRequest) => {
+      setLoading(true);
+      setError(null);
+      setPrediction(null);
 
-    try {
-      const result = await predictChurn(formData);
-      setPrediction(result);
+      try {
+        const result = await predictChurn(formData);
+        setPrediction(result);
 
-      const statsData = await fetchStats();
-      setStats(statsData);
+        const statsData = await fetchStats();
+        setStats(statsData);
 
-      setTabValue(1);
-    } catch (err) {
-      console.error("Error en la petición:", err);
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Error al conectar con el servidor";
-      setError(errorMessage);
-      setTabValue(1);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setTabValue(1);
+      } catch (err) {
+        console.error("Error en la petición:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Error al conectar con el servidor";
+        setError(errorMessage);
+        setTabValue(1);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = useCallback(
+    (event: React.SyntheticEvent, newValue: number) => {
+      setTabValue(newValue);
+    },
+    []
+  );
 
   // Si no está autenticado, mostrar pantalla de login
   if (!isAuthenticated) {
@@ -157,6 +168,7 @@ function App() {
       >
         {/* Header con botón de logout */}
         <Box
+          component="header"
           sx={{
             display: "flex",
             alignItems: "center",
@@ -171,18 +183,26 @@ function App() {
             Bienvenido, {username}
           </Typography>
           <Tooltip title="Cerrar Sesión">
-            <IconButton onClick={handleLogout} sx={{ color: "white" }}>
+            <IconButton
+              onClick={handleLogout}
+              sx={{ color: "white" }}
+              aria-label="Cerrar sesión"
+            >
               <Logout />
             </IconButton>
           </Tooltip>
         </Box>
 
         <Header stats={stats || undefined} />
-        <Container maxWidth="xl" sx={{ mt: 3, mb: 4 }}>
+        <Container
+          component="main"
+          maxWidth="xl"
+          sx={{ mt: 3, mb: 4, px: { xs: 2, sm: 3 } }}
+        >
           <Paper
             elevation={1}
             sx={{
-              borderRadius: 8,
+              borderRadius: { xs: 4, sm: 8 },
               overflow: "hidden",
               boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               border: "1px solid #e0e0e0",
@@ -274,6 +294,7 @@ function App() {
                   <Box sx={{ textAlign: "center", py: 8 }}>
                     <Analytics
                       sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                      aria-label="Icono de análisis"
                     />
                     <Typography variant="h6" color="text.secondary">
                       Sin resultados disponibles
@@ -285,15 +306,51 @@ function App() {
                   </Box>
                 )}
                 {(prediction || error) && (
-                  <PredictionResults prediction={prediction} error={error} />
+                  <Suspense
+                    fallback={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          py: 4,
+                        }}
+                      >
+                        <CircularProgress />
+                      </Box>
+                    }
+                  >
+                    <PredictionResults prediction={prediction} error={error} />
+                  </Suspense>
                 )}
               </Box>
             </TabPanel>
             <TabPanel value={tabValue} index={2}>
-              {prediction && <DashboardPanel prediction={prediction} />}
+              {prediction && (
+                <Suspense
+                  fallback={
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", py: 4 }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  }
+                >
+                  <DashboardPanel prediction={prediction} />
+                </Suspense>
+              )}
             </TabPanel>
             <TabPanel value={tabValue} index={3}>
-              <HistoryPanel />
+              <Suspense
+                fallback={
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 4 }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                }
+              >
+                <HistoryPanel />
+              </Suspense>
             </TabPanel>
           </Paper>
         </Container>

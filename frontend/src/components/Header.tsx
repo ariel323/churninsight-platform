@@ -24,6 +24,8 @@ const Header: React.FC<HeaderProps> = ({ stats }) => {
       <Toolbar sx={{ py: 1.5 }}>
         <AccountBalanceWallet
           sx={{ mr: 2, fontSize: 40, color: "primary.main" }}
+          aria-label="Icono de banco"
+          role="img"
         />
         <Box sx={{ flexGrow: 1 }}>
           <Typography
