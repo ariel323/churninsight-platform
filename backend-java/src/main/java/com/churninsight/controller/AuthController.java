@@ -138,10 +138,28 @@ public class AuthController {
     }
     
     @GetMapping("/validate")
-    public ResponseEntity<?> validateToken() {
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Token válido");
-        return ResponseEntity.ok(response);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("error", "Authorization header missing or invalid");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        String token = authHeader.substring(7);
+        try {
+            String username = jwtService.extractUsername(token);
+            var ud = userService.loadUserByUsername(username);
+            if (ud == null || !jwtService.isTokenValid(token, ud)) {
+                response.put("error", "Token inválido");
+                return ResponseEntity.status(401).body(response);
+            }
+            response.put("message", "Token válido");
+            response.put("username", ud.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Error validando token: " + e.getMessage());
+            return ResponseEntity.status(401).body(response);
+        }
     }
 }
 

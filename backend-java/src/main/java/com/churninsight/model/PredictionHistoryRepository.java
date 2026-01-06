@@ -1,0 +1,16 @@
+package com.churninsight.model;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public interface PredictionHistoryRepository extends JpaRepository<PredictionHistory, Long> {
+    List<PredictionHistory> findByUsernameOrderByPredictionDateDesc(String username);
+    List<PredictionHistory> findTop10ByOrderByPredictionDateDesc();
+    long countByUsername(String username);
+    long countByUsernameAndPredictionDateBetween(String username, LocalDateTime start, LocalDateTime end);
+    long countByUsernameAndChurnProbabilityLessThan(String username, double threshold);
+}

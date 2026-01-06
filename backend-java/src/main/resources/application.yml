@@ -43,3 +43,7 @@ management:
     health:
       probes:
         enabled: true
+
+# URL del servicio Python que expone el modelo (FastAPI)
+python-service:
+  url: http://localhost:8000

@@ -92,6 +92,21 @@
       <version>0.12.3</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+    
+    <!-- JPMML para modelo PMML -->
+    <dependency>
+      <groupId>org.jpmml</groupId>
+      <artifactId>pmml-evaluator</artifactId>
+      <version>1.6.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

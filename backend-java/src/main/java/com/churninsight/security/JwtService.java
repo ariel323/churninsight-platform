@@ -87,6 +87,7 @@ public class JwtService {
     
     private Claims extractAllClaims(String token) {
         try {
+            // Usar verifyWith en lugar de setSigningKey para jjwt 0.12.x
             Claims claims = Jwts.parser()
                 .verifyWith(getSignInKey())
                 .build()
