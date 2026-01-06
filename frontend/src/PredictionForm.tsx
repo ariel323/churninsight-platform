@@ -102,7 +102,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
             fontWeight: 600,
           }}
         >
-          <Person sx={{ mr: 1, color: "#234567" }} />
+          <Person sx={{ mr: 1, color: "#234567" }} aria-hidden="true" />
           Evaluación de Cliente Bancario
         </Typography>
         <Typography variant="body2" sx={{ color: "#424242" }}>
@@ -126,6 +126,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
         >
           <Info
             sx={{ mr: 1, color: "#234567", fontSize: { xs: 18, sm: 20 } }}
+            aria-hidden="true"
           />
           <Typography
             variant="h6"

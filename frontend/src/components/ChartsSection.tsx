@@ -45,7 +45,10 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                 📊 Distribución del Riesgo
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
+                <PieChart
+                  role="img"
+                  aria-label="Gráfico circular de distribución del riesgo"
+                >
                   <Pie
                     data={pieData}
                     cx="50%"
@@ -57,7 +60,6 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    aria-label="Gráfico circular de distribución del riesgo"
                   >
                     {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -86,16 +88,16 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                 📈 Probabilidad de Abandono
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={barData}>
+                <BarChart
+                  data={barData}
+                  role="img"
+                  aria-label="Gráfico de barras de probabilidad de abandono"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis domain={[0, 100]} />
                   <Tooltip formatter={(value: any) => `${value.toFixed(2)}%`} />
-                  <Bar
-                    dataKey="value"
-                    radius={[8, 8, 0, 0]}
-                    aria-label="Barra de probabilidad de abandono"
-                  >
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                     {barData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -119,7 +121,11 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                 🎯 Análisis Multidimensional
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={radarData}>
+                <RadarChart
+                  data={radarData}
+                  role="img"
+                  aria-label="Gráfico radar de análisis multidimensional"
+                >
                   <PolarGrid />
                   <PolarAngleAxis dataKey="subject" />
                   <PolarRadiusAxis domain={[0, 100]} />
@@ -129,7 +135,6 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                     stroke="#8884d8"
                     fill="#8884d8"
                     fillOpacity={0.6}
-                    aria-label="Radar de análisis multidimensional"
                   />
                   <Tooltip formatter={(value: any) => `${value.toFixed(2)}%`} />
                 </RadarChart>
@@ -151,7 +156,11 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                 📉 Tendencia Temporal
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={trendData}>
+                <AreaChart
+                  data={trendData}
+                  role="img"
+                  aria-label="Gráfico de área de tendencia temporal"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="time" />
                   <YAxis domain={[0, 100]} />
@@ -162,7 +171,6 @@ const ChartsSection: React.FC<ChartsSectionProps> = memo(
                     stroke="#82ca9d"
                     fill="#82ca9d"
                     fillOpacity={0.6}
-                    aria-label="Área de tendencia temporal"
                   />
                 </AreaChart>
               </ResponsiveContainer>

@@ -188,7 +188,7 @@ function App() {
               sx={{ color: "white" }}
               aria-label="Cerrar sesión"
             >
-              <Logout />
+              <Logout aria-hidden="true" />
             </IconButton>
           </Tooltip>
         </Box>
@@ -240,24 +240,24 @@ function App() {
                 }}
               >
                 <Tab
-                  icon={<Assessment sx={{ fontSize: 28 }} />}
+                  icon={<Assessment sx={{ fontSize: 28 }} aria-hidden="true" />}
                   label="Evaluación de Cliente"
                   iconPosition="start"
                 />
                 <Tab
-                  icon={<Analytics sx={{ fontSize: 28 }} />}
+                  icon={<Analytics sx={{ fontSize: 28 }} aria-hidden="true" />}
                   label="Resultado de Predicción"
                   iconPosition="start"
                   disabled={!prediction && !error}
                 />
                 <Tab
-                  icon={<Dashboard sx={{ fontSize: 28 }} />}
+                  icon={<Dashboard sx={{ fontSize: 28 }} aria-hidden="true" />}
                   label="Dashboard de Retención"
                   iconPosition="start"
                   disabled={!prediction}
                 />
                 <Tab
-                  icon={<History sx={{ fontSize: 28 }} />}
+                  icon={<History sx={{ fontSize: 28 }} aria-hidden="true" />}
                   label="Historial de Análisis"
                   iconPosition="start"
                 />
@@ -294,7 +294,7 @@ function App() {
                   <Box sx={{ textAlign: "center", py: 8 }}>
                     <Analytics
                       sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-                      aria-label="Icono de análisis"
+                      aria-hidden="true"
                     />
                     <Typography variant="h6" color="text.secondary">
                       Sin resultados disponibles

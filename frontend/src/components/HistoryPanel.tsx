@@ -94,7 +94,10 @@ const HistoryPanel: React.FC = () => {
             bgcolor: "#f8f9fa",
           }}
         >
-          <PersonOutline sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
+          <PersonOutline
+            sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+            aria-hidden="true"
+          />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No hay predicciones previas
           </Typography>
@@ -152,7 +155,10 @@ const HistoryPanel: React.FC = () => {
                 >
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <PersonOutline sx={{ color: "#1e3c72" }} />
+                      <PersonOutline
+                        sx={{ color: "#1e3c72" }}
+                        aria-hidden="true"
+                      />
                       <Typography variant="body2" fontWeight={600}>
                         {item.customerId}
                       </Typography>
@@ -198,10 +204,12 @@ const HistoryPanel: React.FC = () => {
                         {item.churnProbability > 0.5 ? (
                           <TrendingUp
                             sx={{ color: "error.main", fontSize: 20 }}
+                            aria-hidden="true"
                           />
                         ) : (
                           <TrendingDown
                             sx={{ color: "success.main", fontSize: 20 }}
+                            aria-hidden="true"
                           />
                         )}
                         <Typography

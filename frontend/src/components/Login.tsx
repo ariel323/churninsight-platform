@@ -82,10 +82,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       const data = await response.json();
 
       // Guardar token en localStorage
-      console.log(
-        "[DEBUG] Login exitoso, guardando token:",
-        data.token ? `${data.token.substring(0, 30)}...` : "SIN TOKEN"
-      );
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
 
@@ -270,7 +266,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 margin: "0 auto 20px",
               }}
             >
-              <AccountBalance sx={{ fontSize: 50 }} />
+              <AccountBalance sx={{ fontSize: 50 }} aria-hidden="true" />
             </Avatar>
             <Typography
               variant="h4"
@@ -364,7 +360,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 variant="contained"
                 size="large"
                 disabled={loading}
-                startIcon={!loading ? <Lock /> : null}
+                startIcon={!loading ? <Lock aria-hidden="true" /> : null}
                 sx={{
                   py: 1.8,
                   fontSize: "1rem",
@@ -421,7 +417,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BadgeOutlined color="action" />
+                      <BadgeOutlined color="action" aria-hidden="true" />
                     </InputAdornment>
                   ),
                 }}
@@ -441,7 +437,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Person color="action" />
+                      <Person color="action" aria-hidden="true" />
                     </InputAdornment>
                   ),
                 }}
@@ -461,7 +457,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" />
+                      <Email color="action" aria-hidden="true" />
                     </InputAdornment>
                   ),
                 }}
@@ -482,7 +478,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock color="action" aria-hidden="true" />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -490,8 +486,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        aria-label={
+                          showPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? (
+                          <VisibilityOff aria-hidden="true" />
+                        ) : (
+                          <Visibility aria-hidden="true" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -517,7 +522,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 variant="contained"
                 size="large"
                 disabled={loading}
-                startIcon={!loading ? <Person /> : null}
+                startIcon={!loading ? <Person aria-hidden="true" /> : null}
                 sx={{
                   py: 1.8,
                   fontSize: "1rem",

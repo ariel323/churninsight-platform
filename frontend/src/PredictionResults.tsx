@@ -114,11 +114,11 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
   const riskLevel = isHighRisk ? "ALTO" : isMediumRisk ? "MEDIO" : "BAJO";
   const riskColor = isHighRisk ? "error" : isMediumRisk ? "warning" : "success";
   const riskIcon = isHighRisk ? (
-    <Warning aria-label="Advertencia de alto riesgo" />
+    <Warning aria-hidden="true" />
   ) : isMediumRisk ? (
-    <TrendingDown aria-label="Tendencia de riesgo medio" />
+    <TrendingDown aria-hidden="true" />
   ) : (
-    <CheckCircle aria-label="Éxito, bajo riesgo" />
+    <CheckCircle aria-hidden="true" />
   );
 
   return (
@@ -158,7 +158,6 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
           </Box>
           <Chip
             label={`RIESGO ${riskLevel}`}
-            aria-label={`Nivel de riesgo ${riskLevel}`}
             sx={{
               fontSize: "1.2rem",
               fontWeight: "bold",
@@ -290,7 +289,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
             gutterBottom
             sx={{ display: "flex", alignItems: "center" }}
           >
-            <Psychology sx={{ mr: 1 }} />
+            <Psychology sx={{ mr: 1 }} aria-hidden="true" />
             Recomendaciones Estratégicas
           </Typography>
           <Divider sx={{ my: 2 }} />
@@ -317,7 +316,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
         <Alert
           severity="error"
           sx={{ mt: 3 }}
-          icon={<Warning fontSize="large" />}
+          icon={<Warning fontSize="large" aria-hidden="true" />}
         >
           <Typography variant="h6">🚨 Acción Inmediata Requerida</Typography>
           <Typography>
@@ -343,7 +342,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
         <Alert
           severity="success"
           sx={{ mt: 3 }}
-          icon={<CheckCircle fontSize="large" />}
+          icon={<CheckCircle fontSize="large" aria-hidden="true" />}
         >
           <Typography variant="h6">✅ Cliente Estable</Typography>
           <Typography>
