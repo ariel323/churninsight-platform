@@ -279,19 +279,17 @@ spring:
 
 - **Algoritmo**: XGBoost Classifier
 - **Precisión**: ~85% en conjunto de validación
-- **Características**: 10 variables predictoras principales
+- **Características**: 5 variables predictoras derivadas
 - **Formato**: PMML para interoperabilidad
 - **Entrenamiento**: Dataset bancario anonimizado
 
 #### Variables Predictoras
 
-- Edad del cliente
-- Saldo de cuenta
-- Número de productos
-- Antigüedad como cliente
-- Puntaje de crédito
-- Ubicación geográfica
-- Historial de transacciones
+- **Age_Risk**: Indicador binario (1 si edad entre 40-70 años, 0 en caso contrario)
+- **NumOfProducts**: Número de productos contratados por el cliente
+- **Inactivo_40_70**: Indicador binario (1 si cliente de 40-70 años e inactivo, 0 en caso contrario)
+- **Products_Risk_Flag**: Indicador binario (1 si tiene 3 o más productos, 0 en caso contrario)
+- **Country_Risk_Flag**: Indicador binario (1 si cliente de Germany, 0 en caso contrario)
 
 ### 🚀 Consideraciones de Despliegue
 
