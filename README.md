@@ -58,13 +58,17 @@ churninsight-platform/
 ## ✨ Características Principales
 
 - 🔐 **Autenticación segura** con JWT y Spring Security
+- 🔑 **Recuperación de contraseña** vía email con tokens temporales
 - 📊 **Dashboard en tiempo real** con métricas de predicciones
-- 📈 **Historial de predicciones** por cliente
-- ♿ **Accesibilidad web completa** (Lighthouse 90+)
+- 📈 **Historial de predicciones** por cliente con análisis de causales
+- 🎯 **Recomendaciones de negocio** basadas en flags de riesgo
+- 📑 **Exportación a Excel** del historial de predicciones
+- ♿ **Accesibilidad web completa** (Lighthouse 95+)
 - 🔌 **Arquitectura desacoplada** (backend independiente del motor ML)
 - 🛡️ **Seguridad empresarial**: CORS, validación, gestión de sesiones
 - 🎨 **Interfaz moderna** con Material-UI y diseño responsive
 - 📱 **Experiencia móvil optimizada**
+- 🤖 **Integración Python-Java** vía Py4J para predicciones en tiempo real
 
 ---
 
@@ -117,12 +121,17 @@ python api/main.py
 
 ## 🔗 Endpoints Principales
 
-| Método | Endpoint             | Descripción              |
-| ------ | -------------------- | ------------------------ |
-| POST   | `/api/auth/login`    | Autenticación de usuario |
-| POST   | `/api/auth/register` | Registro de usuario      |
-| POST   | `/api/churn/predict` | Predicción de churn      |
-| GET    | `/api/stats`         | Estadísticas del sistema |
+| Método | Endpoint                           | Descripción                           |
+| ------ | ---------------------------------- | ------------------------------------- |
+| POST   | `/api/auth/login`                  | Autenticación de usuario              |
+| POST   | `/api/auth/register`               | Registro de usuario                   |
+| POST   | `/api/auth/forgot-password`        | Recuperación de contraseña            |
+| POST   | `/api/auth/reset-password`         | Reseteo de contraseña con token       |
+| POST   | `/api/churn/predict`               | Predicción de churn (9 variables)     |
+| GET    | `/api/stats`                       | Estadísticas del sistema              |
+| GET    | `/api/churn/history`               | Historial de predicciones del usuario |
+| GET    | `/api/churn/kpis`                  | KPIs del sistema (clientes en riesgo) |
+| GET    | `/api/churn/customer/{id}/history` | Historial de un cliente específico    |
 
 ---
 
@@ -156,13 +165,16 @@ python api/main.py
 | Martin Abreu       | Desarrollo            | Arquitectura, testing            |
 | Alexandra Garavito | Backend               | APIs, seguridad                  |
 
-### 🆕 Últimas Actualizaciones (v1.1.0)
+### 🆕 Últimas Actualizaciones (v1.2.0)
 
-- ✨ **Accesibilidad completa** - Lighthouse 95+ en accesibilidad
-- 🔒 **Seguridad mejorada** - Eliminación automática de console.logs
-- 🎨 **UI/UX optimizada** - Material-UI, responsive design
-- 📊 **Gráficos accesibles** - Etiquetas ARIA en componentes Recharts
-- 🛡️ **WCAG 2.1 AA** - Cumplimiento total de estándares
+- ✨ **9 variables predictoras** - Modelo más robusto con datos originales del cliente
+- 🔑 **Recuperación de contraseña** - Sistema completo con envío de emails
+- 📊 **Panel de KPIs** - Métricas de clientes en riesgo y capital en riesgo
+- 📈 **Análisis de causales** - Identificación automática de razones de riesgo
+- 🎯 **Recomendaciones de negocio** - Acciones sugeridas basadas en causales técnicas
+- 📑 **Exportación Excel** - Descarga de historial con análisis completo
+- 🤖 **Integración Py4J** - Comunicación directa Java-Python sin APIs HTTP
+- ✅ **WCAG 2.1 AA** - Cumplimiento total de estándares de accesibilidad
 
 ---
 
@@ -186,9 +198,10 @@ python api/main.py
 ### Data Science
 
 - **Python 3.10+** - Procesamiento de datos
-- **XGBoost** - Modelo de Machine Learning
-- **PMML** - Intercambio de modelos
-- **FastAPI** - API de predicción (opcional)
+- **XGBoost** - Modelo de Machine Learning (clasificación binaria)
+- **Py4J** - Integración Java-Python en tiempo real
+- **Joblib** - Serialización del modelo entrenado (.pkl)
+- **FastAPI** - API de predicción alternativa (opcional)
 
 ### DevOps & Calidad
 
@@ -279,17 +292,35 @@ spring:
 
 - **Algoritmo**: XGBoost Classifier
 - **Precisión**: ~85% en conjunto de validación
-- **Características**: 5 variables predictoras derivadas
-- **Formato**: PMML para interoperabilidad
+- **Características**: 9 variables predictoras (5 derivadas + 4 originales)
+- **Formato**: PKL (Pickle) con integración Python vía Py4J
 - **Entrenamiento**: Dataset bancario anonimizado
+- **Umbral óptimo**: 0.58 (validado para maximizar recall)
 
 #### Variables Predictoras
 
+**Variables Derivadas (Risk Flags):**
+
 - **Age_Risk**: Indicador binario (1 si edad entre 40-70 años, 0 en caso contrario)
-- **NumOfProducts**: Número de productos contratados por el cliente
+- **NumOfProducts**: Número de productos contratados por el cliente (1-4)
 - **Inactivo_40_70**: Indicador binario (1 si cliente de 40-70 años e inactivo, 0 en caso contrario)
 - **Products_Risk_Flag**: Indicador binario (1 si tiene 3 o más productos, 0 en caso contrario)
 - **Country_Risk_Flag**: Indicador binario (1 si cliente de Germany, 0 en caso contrario)
+
+**Variables Originales del Cliente:**
+
+- **Balance**: Saldo actual de la cuenta del cliente
+- **EstimatedSalary**: Salario estimado del cliente
+- **Tenure**: Antigüedad del cliente (años con el banco)
+- **CreditScore**: Puntuación crediticia del cliente
+- **Country**: País de residencia (France, Germany, Spain)
+- **IsActiveMember**: Estado de actividad de la cuenta (boolean)
+
+#### Niveles de Riesgo
+
+- **ALTO** (≥75%): Contacto inmediato, cashback especial, beneficios premium
+- **MEDIO** (≥58%): Campaña de engagement, promociones personalizadas
+- **BAJO** (<58%): Mantener experiencia actual, monitoreo regular
 
 ### 🚀 Consideraciones de Despliegue
 
@@ -301,6 +332,12 @@ JWT_SECRET=your-super-secret-jwt-key
 DB_USERNAME=prod_user
 DB_PASSWORD=prod_password
 DB_URL=jdbc:mysql://prod-db:3306/churninsight
+
+# SMTP (Solo para recuperación de contraseña)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 
 # Frontend
 REACT_APP_API_URL=https://api.churninsight.com
@@ -336,9 +373,13 @@ Strict-Transport-Security: max-age=31536000
 - **Rate Limiting**: 100 requests/min por IP
 - **SQL Injection Prevention**: JPA Criteria API
 - **XSS Protection**: Content Security Policy
+- **JWT Authentication**: Tokens de sesión con expiración (24h) y refresh (7 días)
+- **Password Reset**: Tokens de un solo uso enviados por email con expiración (15 minutos)
+- **Password Hashing**: BCrypt con salt automático
+- **CORS Protection**: Whitelist de orígenes permitidos
 
 ---
 
-## �📄 Licencia
+## 📄 Licencia
 
 Este proyecto está bajo la licencia MIT. Consulta el archivo `LICENSE` para más detalles.
