@@ -6,6 +6,12 @@ export interface ChurnPredictionRequest {
   inactivo4070: number;
   productsRiskFlag: number;
   countryRiskFlag: number;
+  balance: number;
+  estimatedSalary: number;
+  tenure: number;
+  creditScore: number;
+  country: string;
+  isActiveMember: boolean; // Backend espera boolean (true/false)
 }
 
 export interface ChurnPredictionResponse {
@@ -20,6 +26,12 @@ export interface ChurnFormData {
   inactivo4070: number;
   productsRiskFlag: number;
   countryRiskFlag: number;
+  balance: number;
+  estimatedSalary: number;
+  tenure: number;
+  creditScore: number;
+  country: string;
+  isActiveMember: boolean; // Backend espera boolean (true/false)
 }
 
 export type IncomeLevel = "Bajo" | "Medio" | "Alto";

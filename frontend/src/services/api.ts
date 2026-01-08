@@ -34,6 +34,19 @@ export interface StatsData {
   todayPredictions: number;
 }
 
+export interface KPIsData {
+  totalHighRiskClients: number;
+  capitalAtRisk: number;
+  accuracyLastMonth: number;
+  totalPredictions: number;
+  averageRisk: number;
+}
+
+export interface HistoricalPrediction {
+  date: string;
+  probability: number;
+}
+
 export interface PredictionHistory {
   id: number;
   customerId: string;
@@ -44,6 +57,7 @@ export interface PredictionHistory {
   productsRiskFlag: number;
   countryRiskFlag: number;
   predictionDate: string;
+  isActiveMember: boolean; // Backend devuelve boolean (true/false)
 }
 
 // Función para sanitizar y validar datos
@@ -87,6 +101,12 @@ export const predictChurn = async (
     inactivo4070: data.inactivo4070,
     productsRiskFlag: data.productsRiskFlag,
     countryRiskFlag: data.countryRiskFlag,
+    balance: data.balance,
+    estimatedSalary: data.estimatedSalary,
+    tenure: data.tenure,
+    creditScore: data.creditScore,
+    country: data.country,
+    isActiveMember: data.isActiveMember,
   };
 
   try {
@@ -215,6 +235,89 @@ export const fetchHistory = async (): Promise<PredictionHistory[]> => {
     return result;
   } catch (error) {
     console.error("Error fetching history:", error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene los KPIs de negocio del último mes
+ */
+export const fetchKPIs = async (): Promise<KPIsData> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(`${API_BASE_URL}/stats/kpis`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        // Token ausente/expirado: devolver defaults sin romper la UI
+        return {
+          totalHighRiskClients: 0,
+          capitalAtRisk: 0,
+          accuracyLastMonth: 0,
+          totalPredictions: 0,
+          averageRisk: 0,
+        };
+      }
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const result: KPIsData = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error fetching KPIs:", error);
+    // Retornar valores por defecto en caso de error
+    return {
+      totalHighRiskClients: 0,
+      capitalAtRisk: 0,
+      accuracyLastMonth: 0,
+      totalPredictions: 0,
+      averageRisk: 0,
+    };
+  }
+};
+
+/**
+ * Obtiene el historial de predicciones de un cliente específico
+ */
+export const fetchCustomerHistory = async (
+  customerId: string,
+  days: number = 30
+): Promise<HistoricalPrediction[]> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(
+      `${API_BASE_URL}/churn/customer/${customerId}/history?days=${days}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const result: PredictionHistory[] = await response.json();
+    // Transformar a formato esperado por el gráfico
+    return result.map((item) => ({
+      date: new Date(item.predictionDate).toLocaleDateString("es-ES"),
+      probability: item.churnProbability,
+    }));
+  } catch (error) {
+    console.error("Error fetching customer history:", error);
     return [];
   }
 };

@@ -20,6 +20,10 @@ interface ClientFormData {
   numOfProducts: number;
   isActiveMember: number;
   country: string;
+  balance: number;
+  estimatedSalary: number;
+  tenure: number;
+  creditScore: number;
 }
 
 // Tipos alineados con el modelo de backend/data-science
@@ -50,6 +54,10 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
       numOfProducts: 1,
       isActiveMember: 1,
       country: "France",
+      balance: 0,
+      estimatedSalary: 0,
+      tenure: 0,
+      creditScore: 350,
     },
   });
 
@@ -62,12 +70,18 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
       const productsRiskFlag = data.numOfProducts >= 3 ? 1 : 0;
       const countryRiskFlag = data.country === "Germany" ? 1 : 0;
 
-      const modelData: ChurnFormData = {
+      const modelData = {
         ageRisk,
         numOfProducts: data.numOfProducts,
         inactivo4070,
         productsRiskFlag,
         countryRiskFlag,
+        balance: data.balance,
+        estimatedSalary: data.estimatedSalary,
+        tenure: data.tenure,
+        creditScore: data.creditScore,
+        country: data.country,
+        isActiveMember: data.isActiveMember === 1, // Convertir 1/0 a true/false
       };
 
       onSubmit(modelData);
@@ -266,17 +280,108 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
               </FormControl>
             )}
           />
+
+          {/* Balance */}
+          <Controller
+            name="balance"
+            control={control}
+            rules={{
+              required: "El balance es obligatorio",
+              min: { value: 0, message: "No puede ser negativo" },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                fullWidth
+                label="Balance en Cuenta ($)"
+                placeholder="Ej: 25000"
+                error={!!errors.balance}
+                helperText={
+                  errors.balance?.message || "Saldo actual del cliente"
+                }
+                InputProps={{ inputProps: { min: 0 } }}
+              />
+            )}
+          />
+
+          {/* Estimated Salary */}
+          <Controller
+            name="estimatedSalary"
+            control={control}
+            rules={{
+              required: "El salario estimado es obligatorio",
+              min: { value: 0, message: "No puede ser negativo" },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                fullWidth
+                label="Salario Estimado ($)"
+                placeholder="Ej: 12000"
+                error={!!errors.estimatedSalary}
+                helperText={
+                  errors.estimatedSalary?.message || "Salario anual estimado"
+                }
+                InputProps={{ inputProps: { min: 0 } }}
+              />
+            )}
+          />
+
+          {/* Tenure */}
+          <Controller
+            name="tenure"
+            control={control}
+            rules={{
+              required: "La antigüedad es obligatoria",
+              min: { value: 0, message: "No puede ser negativa" },
+              max: { value: 10, message: "Máximo 10 años" },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                fullWidth
+                label="Antigüedad (años)"
+                placeholder="Ej: 5"
+                error={!!errors.tenure}
+                helperText={errors.tenure?.message || "Años como cliente"}
+                InputProps={{ inputProps: { min: 0, max: 10 } }}
+              />
+            )}
+          />
+
+          {/* Credit Score */}
+          <Controller
+            name="creditScore"
+            control={control}
+            rules={{
+              required: "El score de crédito es obligatorio",
+              min: { value: 300, message: "Mínimo 300" },
+              max: { value: 850, message: "Máximo 850" },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                fullWidth
+                label="Score de Crédito"
+                placeholder="Ej: 720"
+                error={!!errors.creditScore}
+                helperText={
+                  errors.creditScore?.message ||
+                  "Score de crédito del cliente (300-850)"
+                }
+                InputProps={{ inputProps: { min: 300, max: 850 } }}
+              />
+            )}
+          />
         </Box>
       </Paper>
 
-      <Box
-        sx={{
-          mt: { xs: 3, sm: 4 },
-          display: "flex",
-          justifyContent: "center",
-          px: { xs: 2, sm: 0 },
-        }}
-      >
+      {/* Botón de envío */}
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Button
           type="submit"
           variant="contained"
@@ -284,12 +389,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
           disabled={loading}
           sx={{
             px: { xs: 4, sm: 6 },
-            py: 1.5,
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            minWidth: { xs: "100%", sm: 250 },
-            maxWidth: { xs: "100%", sm: "none" },
-            bgcolor: "#5a6c7d",
-            color: "#ffffff",
+            py: { xs: 1.5, sm: 2 },
+            bgcolor: "#234567",
+            fontSize: { xs: "0.95rem", sm: "1rem" },
             fontWeight: 600,
             "&:hover": {
               bgcolor: "#4a5c6d",
