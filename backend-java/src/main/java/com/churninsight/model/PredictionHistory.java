@@ -38,6 +38,22 @@ public class PredictionHistory {
     @Column(nullable = false)
     private String username;
     
+    // NUEVOS CAMPOS - Fase 3
+    @Column
+    private Double balance;
+    
+    @Column
+    private Double estimatedSalary;
+    
+    @Column
+    private String country;
+    
+    @Column
+    private Integer tenure;
+    
+    @Column
+    private Boolean isActiveMember;
+    
     // Constructors
     public PredictionHistory() {
     }
@@ -135,5 +151,46 @@ public class PredictionHistory {
     
     public void setUsername(String username) {
         this.username = username;
+    }
+    
+    // Getters y Setters para nuevos campos
+    public Double getBalance() {
+        return balance;
+    }
+    
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+    
+    public Double getEstimatedSalary() {
+        return estimatedSalary;
+    }
+    
+    public void setEstimatedSalary(Double estimatedSalary) {
+        this.estimatedSalary = estimatedSalary;
+    }
+    
+    public String getCountry() {
+        return country;
+    }
+    
+    public void setCountry(String country) {
+        this.country = country;
+    }
+    
+    public Integer getTenure() {
+        return tenure;
+    }
+    
+    public void setTenure(Integer tenure) {
+        this.tenure = tenure;
+    }
+    
+    public Boolean getIsActiveMember() {
+        return isActiveMember;
+    }
+    
+    public void setIsActiveMember(Boolean isActiveMember) {
+        this.isActiveMember = isActiveMember;
     }
 }

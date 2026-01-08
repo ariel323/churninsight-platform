@@ -13,4 +13,10 @@ public interface PredictionHistoryRepository extends JpaRepository<PredictionHis
     long countByUsername(String username);
     long countByUsernameAndPredictionDateBetween(String username, LocalDateTime start, LocalDateTime end);
     long countByUsernameAndChurnProbabilityLessThan(String username, double threshold);
+    
+    // Nuevos métodos - Fase 3
+    List<PredictionHistory> findByCustomerIdOrderByPredictionDateDesc(String customerId);
+    List<PredictionHistory> findByCustomerIdAndPredictionDateAfterOrderByPredictionDateDesc(
+        String customerId, LocalDateTime since);
+    List<PredictionHistory> findByPredictionDateAfter(LocalDateTime since);
 }
