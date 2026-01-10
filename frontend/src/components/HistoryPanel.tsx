@@ -294,7 +294,15 @@ const HistoryPanel: React.FC = () => {
                 Capital en Riesgo
               </Typography>
               <Typography variant="h3" color="warning.main" fontWeight={700}>
-                ${(kpis.capitalAtRisk / 1000000).toFixed(1)}M
+                {kpis.capitalAtRisk >= 1000000
+                  ? `$${(kpis.capitalAtRisk / 1000000).toLocaleString("es-ES", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 6,
+                    })}M`
+                  : `$${kpis.capitalAtRisk.toLocaleString("es-ES", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}`}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Suma de balances en riesgo
