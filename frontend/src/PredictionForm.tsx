@@ -10,6 +10,7 @@ import {
   InputLabel,
   Select,
   Divider,
+  Grid,
 } from "@mui/material";
 import { Person, Info } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
@@ -156,228 +157,231 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
 
         <Divider sx={{ mb: { xs: 2, sm: 3 } }} />
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-            gap: { xs: 2.5, sm: 3 },
-          }}
-        >
+        <Grid container spacing={{ xs: 2.5, sm: 3 }}>
           {/* Edad */}
-          <Controller
-            name="age"
-            control={control}
-            rules={{
-              required: "La edad es obligatoria",
-              min: { value: 18, message: "La edad mínima es 18 años" },
-              max: { value: 100, message: "La edad máxima es 100 años" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Edad del Cliente"
-                placeholder="Ej: 45"
-                error={!!errors.age}
-                helperText={
-                  errors.age?.message || "Ingrese la edad del cliente"
-                }
-                InputProps={{
-                  inputProps: { min: 18, max: 100 },
-                }}
-              />
-            )}
-          />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="age"
+              control={control}
+              rules={{
+                required: "La edad es obligatoria",
+                min: { value: 18, message: "La edad mínima es 18 años" },
+                max: { value: 100, message: "La edad máxima es 100 años" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Edad del Cliente"
+                  placeholder="Ej: 45"
+                  error={!!errors.age}
+                  helperText={
+                    errors.age?.message || "Ingrese la edad del cliente"
+                  }
+                  InputProps={{
+                    inputProps: { min: 18, max: 100 },
+                  }}
+                />
+              )}
+            />
+          </Grid>
           {/* Número de productos */}
-          <Controller
-            name="numOfProducts"
-            control={control}
-            rules={{
-              required: "El número de productos es obligatorio",
-              min: { value: 1, message: "Mínimo 1 producto" },
-              max: { value: 10, message: "Máximo 10 productos" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Productos Contratados"
-                placeholder="Ej: 2"
-                error={!!errors.numOfProducts}
-                helperText={
-                  errors.numOfProducts?.message ||
-                  "Cantidad de productos bancarios activos"
-                }
-                InputProps={{
-                  inputProps: { min: 1, max: 10 },
-                }}
-              />
-            )}
-          />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="numOfProducts"
+              control={control}
+              rules={{
+                required: "El número de productos es obligatorio",
+                min: { value: 1, message: "Mínimo 1 producto" },
+                max: { value: 10, message: "Máximo 10 productos" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Productos Contratados"
+                  placeholder="Ej: 2"
+                  error={!!errors.numOfProducts}
+                  helperText={
+                    errors.numOfProducts?.message ||
+                    "Cantidad de productos bancarios activos"
+                  }
+                  InputProps={{
+                    inputProps: { min: 1, max: 10 },
+                  }}
+                />
+              )}
+            />
+          </Grid>
           {/* Estado de la cuenta */}
-          <Controller
-            name="isActiveMember"
-            control={control}
-            rules={{ required: "El estado de la cuenta es obligatorio" }}
-            render={({ field }) => (
-              <FormControl fullWidth error={!!errors.isActiveMember}>
-                <InputLabel>Estado de la Cuenta</InputLabel>
-                <Select {...field} label="Estado de la Cuenta">
-                  <MenuItem value={1}>Activa</MenuItem>
-                  <MenuItem value={0}>Inactiva</MenuItem>
-                </Select>
-                {errors.isActiveMember && (
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="isActiveMember"
+              control={control}
+              rules={{ required: "El estado de la cuenta es obligatorio" }}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.isActiveMember}>
+                  <InputLabel>Estado de la Cuenta</InputLabel>
+                  <Select {...field} label="Estado de la Cuenta">
+                    <MenuItem value={1}>Activa</MenuItem>
+                    <MenuItem value={0}>Inactiva</MenuItem>
+                  </Select>
+                  {errors.isActiveMember && (
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      sx={{ mt: 0.5, ml: 1.5 }}
+                    >
+                      {errors.isActiveMember.message}
+                    </Typography>
+                  )}
                   <Typography
                     variant="caption"
-                    color="error"
-                    sx={{ mt: 0.5, ml: 1.5 }}
+                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
                   >
-                    {errors.isActiveMember.message}
+                    Indica si el cliente usa activamente sus servicios
                   </Typography>
-                )}
-                <Typography
-                  variant="caption"
-                  sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
-                >
-                  Indica si el cliente usa activamente sus servicios
-                </Typography>
-              </FormControl>
-            )}
-          />
-
+                </FormControl>
+              )}
+            />
+          </Grid>
           {/* País */}
-          <Controller
-            name="country"
-            control={control}
-            rules={{ required: "El país es obligatorio" }}
-            render={({ field }) => (
-              <FormControl fullWidth error={!!errors.country}>
-                <InputLabel>País de Residencia</InputLabel>
-                <Select {...field} label="País de Residencia">
-                  <MenuItem value="France">Francia</MenuItem>
-                  <MenuItem value="Germany">Alemania</MenuItem>
-                  <MenuItem value="Spain">España</MenuItem>
-                </Select>
-                {errors.country && (
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="country"
+              control={control}
+              rules={{ required: "El país es obligatorio" }}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.country}>
+                  <InputLabel>País de Residencia</InputLabel>
+                  <Select {...field} label="País de Residencia">
+                    <MenuItem value="France">Francia</MenuItem>
+                    <MenuItem value="Germany">Alemania</MenuItem>
+                    <MenuItem value="Spain">España</MenuItem>
+                  </Select>
+                  {errors.country && (
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      sx={{ mt: 0.5, ml: 1.5 }}
+                    >
+                      {errors.country.message}
+                    </Typography>
+                  )}
                   <Typography
                     variant="caption"
-                    color="error"
-                    sx={{ mt: 0.5, ml: 1.5 }}
+                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
                   >
-                    {errors.country.message}
+                    Seleccione el país donde reside el cliente
                   </Typography>
-                )}
-                <Typography
-                  variant="caption"
-                  sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
-                >
-                  Seleccione el país donde reside el cliente
-                </Typography>
-              </FormControl>
-            )}
-          />
-
+                </FormControl>
+              )}
+            />
+          </Grid>
           {/* Balance */}
-          <Controller
-            name="balance"
-            control={control}
-            rules={{
-              required: "El balance es obligatorio",
-              min: { value: 0, message: "No puede ser negativo" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Balance en Cuenta ($)"
-                placeholder="Ej: 25000"
-                error={!!errors.balance}
-                helperText={
-                  errors.balance?.message || "Saldo actual del cliente"
-                }
-                InputProps={{ inputProps: { min: 0 } }}
-              />
-            )}
-          />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="balance"
+              control={control}
+              rules={{
+                required: "El balance es obligatorio",
+                min: { value: 0, message: "No puede ser negativo" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Balance en Cuenta ($)"
+                  placeholder="Ej: 25000"
+                  error={!!errors.balance}
+                  helperText={
+                    errors.balance?.message || "Saldo actual del cliente"
+                  }
+                  InputProps={{ inputProps: { min: 0 } }}
+                />
+              )}
+            />
+          </Grid>
           {/* Estimated Salary */}
-          <Controller
-            name="estimatedSalary"
-            control={control}
-            rules={{
-              required: "El salario estimado es obligatorio",
-              min: { value: 0, message: "No puede ser negativo" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Salario Estimado ($)"
-                placeholder="Ej: 12000"
-                error={!!errors.estimatedSalary}
-                helperText={
-                  errors.estimatedSalary?.message || "Salario anual estimado"
-                }
-                InputProps={{ inputProps: { min: 0 } }}
-              />
-            )}
-          />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="estimatedSalary"
+              control={control}
+              rules={{
+                required: "El salario estimado es obligatorio",
+                min: { value: 0, message: "No puede ser negativo" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Salario Estimado ($)"
+                  placeholder="Ej: 12000"
+                  error={!!errors.estimatedSalary}
+                  helperText={
+                    errors.estimatedSalary?.message || "Salario anual estimado"
+                  }
+                  InputProps={{ inputProps: { min: 0 } }}
+                />
+              )}
+            />
+          </Grid>
           {/* Tenure */}
-          <Controller
-            name="tenure"
-            control={control}
-            rules={{
-              required: "La antigüedad es obligatoria",
-              min: { value: 0, message: "No puede ser negativa" },
-              max: { value: 10, message: "Máximo 10 años" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Antigüedad (años)"
-                placeholder="Ej: 5"
-                error={!!errors.tenure}
-                helperText={errors.tenure?.message || "Años como cliente"}
-                InputProps={{ inputProps: { min: 0, max: 10 } }}
-              />
-            )}
-          />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="tenure"
+              control={control}
+              rules={{
+                required: "La antigüedad es obligatoria",
+                min: { value: 0, message: "No puede ser negativa" },
+                max: { value: 10, message: "Máximo 10 años" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Antigüedad (años)"
+                  placeholder="Ej: 5"
+                  error={!!errors.tenure}
+                  helperText={errors.tenure?.message || "Años como cliente"}
+                  InputProps={{ inputProps: { min: 0, max: 10 } }}
+                />
+              )}
+            />
+          </Grid>
           {/* Credit Score */}
-          <Controller
-            name="creditScore"
-            control={control}
-            rules={{
-              required: "El score de crédito es obligatorio",
-              min: { value: 300, message: "Mínimo 300" },
-              max: { value: 850, message: "Máximo 850" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
-                fullWidth
-                label="Score de Crédito"
-                placeholder="Ej: 720"
-                error={!!errors.creditScore}
-                helperText={
-                  errors.creditScore?.message ||
-                  "Score de crédito del cliente (300-850)"
-                }
-                InputProps={{ inputProps: { min: 300, max: 850 } }}
-              />
-            )}
-          />
-        </Box>
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="creditScore"
+              control={control}
+              rules={{
+                required: "El score de crédito es obligatorio",
+                min: { value: 300, message: "Mínimo 300" },
+                max: { value: 850, message: "Máximo 850" },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Score de Crédito"
+                  placeholder="Ej: 720"
+                  error={!!errors.creditScore}
+                  helperText={
+                    errors.creditScore?.message ||
+                    "Score de crédito del cliente (300-850)"
+                  }
+                  InputProps={{ inputProps: { min: 300, max: 850 } }}
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
       </Paper>
 
       {/* Botón de envío */}
