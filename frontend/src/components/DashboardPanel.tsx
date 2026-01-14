@@ -54,9 +54,18 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ prediction }) => {
         retención de usuarios en su billetera digital
       </Typography>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "1fr 1fr",
+          },
+          gap: 3,
+        }}
+      >
         {/* Tarjeta de Resumen */}
-        <Box sx={{ flex: "1 1 100%", minWidth: "280px" }}>
+        <Box sx={{ gridColumn: { xs: "1", md: "1 / -1" } }}>
           <Paper
             elevation={3}
             sx={{
@@ -108,12 +117,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ prediction }) => {
         </Box>
 
         {/* Métricas Clave */}
-        <Box
-          sx={{
-            flex: "1 1 calc(50% - 12px)",
-            minWidth: "280px",
-          }}
-        >
+        <Box>
           <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
             <Typography variant="h6" gutterBottom color="primary">
               🎯 Acción Recomendada
@@ -128,12 +132,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ prediction }) => {
           </Paper>
         </Box>
 
-        <Box
-          sx={{
-            flex: "1 1 calc(50% - 12px)",
-            minWidth: "280px",
-          }}
-        >
+        <Box>
           <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
             <Typography variant="h6" gutterBottom color="primary">
               ⏱️ Tiempo de Acción
