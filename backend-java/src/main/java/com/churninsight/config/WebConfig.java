@@ -13,10 +13,10 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:3000", "http://localhost:8080")
+                    .allowedOrigins("http://34.68.145.66", "http://localhost:3000", "http://localhost:8080")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
-                    .allowedHeaders("*")
-                    .exposedHeaders("*")
+                    .allowedHeaders("Authorization", "Content-Type", "Cache-Control", "*")
+                    .exposedHeaders("Authorization", "*")
                     .allowCredentials(true)
                     .maxAge(3600);
             }
