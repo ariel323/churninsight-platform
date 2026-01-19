@@ -62,8 +62,9 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [prediction, setPrediction] = useState<ChurnPredictionResponse | null>(
-    null
+    null,
   );
+  const [formData, setFormData] = useState<ChurnPredictionRequest | null>(null); // Guardar formData
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
@@ -115,13 +116,14 @@ function App() {
   }, []);
 
   const handlePrediction = useCallback(
-    async (formData: ChurnPredictionRequest) => {
+    async (requestData: ChurnPredictionRequest) => {
       setLoading(true);
       setError(null);
       setPrediction(null);
+      setFormData(requestData); // Guardar formData para análisis inteligente
 
       try {
-        const result = await predictChurn(formData);
+        const result = await predictChurn(requestData);
         setPrediction(result);
 
         const statsData = await fetchStats();
@@ -140,14 +142,14 @@ function App() {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   const handleTabChange = useCallback(
     (event: React.SyntheticEvent, newValue: number) => {
       setTabValue(newValue);
     },
-    []
+    [],
   );
 
   // Si no está autenticado, mostrar pantalla de login
@@ -319,7 +321,11 @@ function App() {
                       </Box>
                     }
                   >
-                    <PredictionResults prediction={prediction} error={error} />
+                    <PredictionResults
+                      prediction={prediction}
+                      error={error}
+                      formData={formData || undefined}
+                    />
                   </Suspense>
                 )}
               </Box>

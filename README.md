@@ -92,7 +92,7 @@ churninsight-platform/
 ```bash
 cd frontend
 npm install
-npm run dev
+npm start
 ```
 
 > Accede a `http://localhost:3000`

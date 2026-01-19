@@ -59,12 +59,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      const cleanUsername = username.trim();
+      const cleanPassword = password.trim();
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: cleanUsername,
+          password: cleanPassword,
+        }),
       });
 
       if (!response.ok) {
@@ -81,9 +86,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
       const data = await response.json();
 
-      // Guardar token en localStorage
+      // Guardar token y roles en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
+
+      // Guardar roles si están disponibles
+      if (data.roles && Array.isArray(data.roles)) {
+        localStorage.setItem("roles", JSON.stringify(data.roles));
+      }
 
       onLoginSuccess(data.token, data.username);
     } catch (err) {

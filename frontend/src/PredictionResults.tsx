@@ -1,4 +1,4 @@
-import React, { useMemo, lazy, Suspense, useCallback } from "react";
+import React, { useMemo, lazy, Suspense } from "react";
 import {
   Box,
   Typography,
@@ -22,6 +22,7 @@ import {
   Psychology,
 } from "@mui/icons-material";
 import { ChurnPredictionResponse } from "./types";
+import IntelligentAnalysis from "./components/IntelligentAnalysis";
 
 // Lazy load de gráficos pesados
 const ChartsSection = lazy(() => import("./components/ChartsSection"));
@@ -29,11 +30,13 @@ const ChartsSection = lazy(() => import("./components/ChartsSection"));
 interface PredictionResultsProps {
   prediction: ChurnPredictionResponse | null;
   error: string | null;
+  formData?: any; // Datos del formulario para análisis inteligente
 }
 
 const PredictionResults: React.FC<PredictionResultsProps> = ({
   prediction,
   error,
+  formData,
 }) => {
   // Calcular variables antes de cualquier return
   const probability = prediction?.churn_probability || 0;
@@ -165,8 +168,8 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
               color: isHighRisk
                 ? "#d32f2f"
                 : isMediumRisk
-                ? "#ed6c02"
-                : "#2e7d32",
+                  ? "#ed6c02"
+                  : "#2e7d32",
             }}
           />
         </Box>
@@ -351,6 +354,11 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({
             fidelización para fortalecer la relación.
           </Typography>
         </Alert>
+      )}
+
+      {/* Análisis Inteligente Basado en IA */}
+      {prediction && formData && (
+        <IntelligentAnalysis prediction={prediction} formData={formData} />
       )}
 
       <Alert severity="info" sx={{ mt: 2 }}>

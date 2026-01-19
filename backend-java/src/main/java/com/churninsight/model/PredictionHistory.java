@@ -54,6 +54,22 @@ public class PredictionHistory {
     @Column
     private Boolean isActiveMember;
     
+    // Nuevos campos dinámicos para el modelo actualizado
+    @Column
+    private Double deltaBalance;
+    
+    @Column
+    private Double deltaNumOfProducts;
+    
+    @Column
+    private Boolean recentInactive;
+    
+    @Column
+    private Boolean productUsageDrop;
+    
+    @Column
+    private Boolean hadComplaint;
+    
     // Constructors
     public PredictionHistory() {
     }
@@ -192,5 +208,46 @@ public class PredictionHistory {
     
     public void setIsActiveMember(Boolean isActiveMember) {
         this.isActiveMember = isActiveMember;
+    }
+    
+    // Getters y setters para campos dinámicos
+    public Double getDeltaBalance() {
+        return deltaBalance;
+    }
+    
+    public void setDeltaBalance(Double deltaBalance) {
+        this.deltaBalance = deltaBalance;
+    }
+    
+    public Double getDeltaNumOfProducts() {
+        return deltaNumOfProducts;
+    }
+    
+    public void setDeltaNumOfProducts(Double deltaNumOfProducts) {
+        this.deltaNumOfProducts = deltaNumOfProducts;
+    }
+    
+    public Boolean getRecentInactive() {
+        return recentInactive;
+    }
+    
+    public void setRecentInactive(Boolean recentInactive) {
+        this.recentInactive = recentInactive;
+    }
+    
+    public Boolean getProductUsageDrop() {
+        return productUsageDrop;
+    }
+    
+    public void setProductUsageDrop(Boolean productUsageDrop) {
+        this.productUsageDrop = productUsageDrop;
+    }
+    
+    public Boolean getHadComplaint() {
+        return hadComplaint;
+    }
+    
+    public void setHadComplaint(Boolean hadComplaint) {
+        this.hadComplaint = hadComplaint;
     }
 }

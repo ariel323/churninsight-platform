@@ -58,6 +58,39 @@ export interface PredictionHistory {
   countryRiskFlag: number;
   predictionDate: string;
   isActiveMember: boolean; // Backend devuelve boolean (true/false)
+  // Nuevas variables - Fase 3
+  balance?: number;
+  estimatedSalary?: number;
+  country?: string;
+  tenure?: number;
+}
+
+// Paginación genérica
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+// Resumen por analista para ADMIN
+export interface AnalystSummary {
+  username: string;
+  fullName: string;
+  email: string;
+  totalAnalyses: number;
+  lastPredictionDate: string;
+  averageChurnProbability: number;
+}
+
+// Reporte por periodo (mensual/anual) para analistas
+export interface AnalystPeriodReport {
+  year: number;
+  month?: number | null;
+  totalAnalyses: number;
+  highRiskCount: number;
+  averageChurnProbability: number;
 }
 
 // Función para sanitizar y validar datos
@@ -81,33 +114,132 @@ const getAuthHeaders = (): HeadersInit => {
   return headers;
 };
 
-// Función para realizar la predicción con validaciones de seguridad
-export const predictChurn = async (
-  data: ChurnPredictionRequest
-): Promise<ChurnPredictionResponse> => {
-  // Validaciones de seguridad adicionales
-  if (data.ageRisk < 0 || data.ageRisk > 1) {
-    throw new Error("Age Risk debe ser 0 o 1");
+// Función para decodificar JWT y obtener roles
+export const getUserRoles = (): string[] => {
+  // 1) Preferir roles almacenados en localStorage desde la respuesta de login
+  const stored = localStorage.getItem("roles");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
   }
 
-  if (data.numOfProducts < 0) {
+  // 2) Fallback: intentar decodificar el JWT
+  const token = localStorage.getItem("token");
+  if (!token) return [];
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    // Algunas implementaciones usan 'roles', otras 'authorities' con prefijo ROLE_
+    const rawRoles = payload.roles || payload.authorities || [];
+    if (Array.isArray(rawRoles)) {
+      return rawRoles.map((r: string) => r.replace(/^ROLE_/, ""));
+    }
+    return [];
+  } catch (error) {
+    console.error("Error decodificando token:", error);
+    return [];
+  }
+};
+
+// Función para verificar si el usuario tiene un rol específico
+export const hasRole = (role: string): boolean => {
+  const roles = getUserRoles();
+  return roles.includes(role);
+};
+
+// Función para verificar si el usuario es administrador
+export const isAdmin = (): boolean => {
+  return hasRole("ADMIN");
+};
+
+// ADMIN: Obtener resumen por analistas
+export const fetchAnalystSummaries = async (): Promise<AnalystSummary[]> => {
+  const response = await fetch(`${API_BASE_URL}/admin/analysts`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  return response.json();
+};
+
+// ADMIN: Obtener historial por analista con paginación
+export const fetchHistoryByAnalyst = async (
+  username: string,
+  page = 0,
+  size = 50,
+): Promise<Page<PredictionHistory>> => {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/history/by-analyst?username=${encodeURIComponent(
+      username,
+    )}&page=${page}&size=${size}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    },
+  );
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  return response.json();
+};
+
+// ADMIN: Obtener historial por analista filtrado por rango de fechas
+export const fetchHistoryByAnalystRange = async (
+  username: string,
+  from: string, // formato YYYY-MM-DD
+  to: string, // formato YYYY-MM-DD
+  page = 0,
+  size = 50,
+): Promise<Page<PredictionHistory>> => {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/history/by-analyst-range?username=${encodeURIComponent(
+      username,
+    )}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(
+      to,
+    )}&page=${page}&size=${size}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    },
+  );
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  return response.json();
+};
+
+// ADMIN: Obtener reporte por periodo (mensual/anual) para un analista
+export const fetchAnalystPeriodReport = async (
+  username: string,
+  from: string,
+  to: string,
+  granularity: "monthly" | "yearly" = "monthly",
+): Promise<AnalystPeriodReport[]> => {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/report/analyst-period?username=${encodeURIComponent(
+      username,
+    )}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(
+      to,
+    )}&granularity=${granularity}`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  return response.json();
+};
+
+// Función para realizar la predicción con validaciones de seguridad
+export const predictChurn = async (
+  data: ChurnPredictionRequest,
+): Promise<ChurnPredictionResponse> => {
+  // Validaciones básicas
+  if (data.age < 18 || data.age > 100) {
+    throw new Error("Edad debe estar entre 18 y 100");
+  }
+
+  if (data.numOfProducts < 1 || data.numOfProducts > 10) {
     throw new Error("Número de productos inválido");
   }
 
-  // Preparar datos para enviar al backend Java (que luego envía a FastAPI)
-  const backendData = {
-    ageRisk: data.ageRisk,
-    numOfProducts: data.numOfProducts,
-    inactivo4070: data.inactivo4070,
-    productsRiskFlag: data.productsRiskFlag,
-    countryRiskFlag: data.countryRiskFlag,
-    balance: data.balance,
-    estimatedSalary: data.estimatedSalary,
-    tenure: data.tenure,
-    creditScore: data.creditScore,
-    country: data.country,
-    isActiveMember: data.isActiveMember,
-  };
+  // Enviar datos crudos al backend (el backend computará las características)
+  const backendData = data;
 
   try {
     const controller = new AbortController();
@@ -130,7 +262,7 @@ export const predictChurn = async (
           localStorage.removeItem("username");
         }
         throw new Error(
-          "Sesión no válida. Inicia sesión nuevamente para continuar."
+          "Sesión no válida. Inicia sesión nuevamente para continuar.",
         );
       }
       if (response.status === 400) {
@@ -212,7 +344,7 @@ export const fetchStats = async (): Promise<StatsData> => {
 };
 
 /**
- * Obtiene el historial de predicciones
+ * Obtiene el historial de predicciones del usuario actual
  */
 export const fetchHistory = async (): Promise<PredictionHistory[]> => {
   try {
@@ -240,12 +372,50 @@ export const fetchHistory = async (): Promise<PredictionHistory[]> => {
 };
 
 /**
+ * Obtiene TODO el historial del sistema (todos los usuarios) con paginación
+ */
+export const fetchAllHistory = async (
+  page: number = 0,
+  size: number = 100,
+): Promise<{
+  content: PredictionHistory[];
+  totalElements: number;
+  totalPages: number;
+}> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // Mayor timeout para grandes cargas
+
+    const response = await fetch(
+      `${API_BASE_URL}/churn/history/all?page=${page}&size=${size}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      },
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error fetching all history:", error);
+    return { content: [], totalElements: 0, totalPages: 0 };
+  }
+};
+
+/**
  * Obtiene los KPIs de negocio del último mes
  */
 export const fetchKPIs = async (): Promise<KPIsData> => {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // Aumentado a 30 segundos para grandes datasets
 
     const response = await fetch(`${API_BASE_URL}/stats/kpis`, {
       method: "GET",
@@ -289,7 +459,7 @@ export const fetchKPIs = async (): Promise<KPIsData> => {
  */
 export const fetchCustomerHistory = async (
   customerId: string,
-  days: number = 30
+  days: number = 30,
 ): Promise<HistoricalPrediction[]> => {
   try {
     const controller = new AbortController();
@@ -301,7 +471,7 @@ export const fetchCustomerHistory = async (
         method: "GET",
         headers: getAuthHeaders(),
         signal: controller.signal,
-      }
+      },
     );
 
     clearTimeout(timeoutId);
