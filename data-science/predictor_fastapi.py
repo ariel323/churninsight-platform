@@ -30,15 +30,12 @@ app.add_middleware(
 )
 
 class PredictRequest(BaseModel):
-    ageRisk: float
+    # MODELO SIMPLIFICADO - Solo 6 variables (actualizado 19/01/2026)
     numOfProducts: float
     inactivo4070: float
     productsRiskFlag: float
     countryRiskFlag: float
-    deltaBalance: float = 0.0
     deltaNumOfProducts: float = 0.0
-    recentInactive: bool = False
-    productUsageDrop: bool = False
     hadComplaint: bool = False
 
 class PredictResponse(BaseModel):
@@ -65,15 +62,11 @@ def predict(req: PredictRequest):
     # Logging de entrada para diagnóstico
     logger.info("="*50)
     logger.info("DATOS RECIBIDOS DEL BACKEND JAVA:")
-    logger.info(f"  ageRisk: {req.ageRisk} (tipo: {type(req.ageRisk)})")
     logger.info(f"  numOfProducts: {req.numOfProducts} (tipo: {type(req.numOfProducts)})")
     logger.info(f"  inactivo4070: {req.inactivo4070} (tipo: {type(req.inactivo4070)})")
     logger.info(f"  productsRiskFlag: {req.productsRiskFlag} (tipo: {type(req.productsRiskFlag)})")
     logger.info(f"  countryRiskFlag: {req.countryRiskFlag} (tipo: {type(req.countryRiskFlag)})")
-    logger.info(f"  deltaBalance: {req.deltaBalance} (tipo: {type(req.deltaBalance)})")
     logger.info(f"  deltaNumOfProducts: {req.deltaNumOfProducts} (tipo: {type(req.deltaNumOfProducts)})")
-    logger.info(f"  recentInactive: {req.recentInactive} (tipo: {type(req.recentInactive)})")
-    logger.info(f"  productUsageDrop: {req.productUsageDrop} (tipo: {type(req.productUsageDrop)})")
     logger.info(f"  hadComplaint: {req.hadComplaint} (tipo: {type(req.hadComplaint)})")
     logger.info("="*50)
     
@@ -84,17 +77,13 @@ def predict(req: PredictRequest):
     
     try:
         # Convertir a dict para PMML (asegurar tipos correctos)
-        # IMPORTANTE: Los booleanos deben convertirse a 1.0 o 0.0
+        # MODELO SIMPLIFICADO - 6 variables
         features = {
-            'Age_Risk': float(req.ageRisk),
             'NumOfProducts': float(req.numOfProducts),
             'Inactivo_40_70': float(req.inactivo4070),
             'Products_Risk_Flag': float(req.productsRiskFlag),
             'Country_Risk_Flag': float(req.countryRiskFlag),
-            'Delta_Balance': float(req.deltaBalance),
             'Delta_NumOfProducts': float(req.deltaNumOfProducts),
-            'Recent_Inactive': 1.0 if req.recentInactive else 0.0,  # Convertir bool a 1.0/0.0
-            'Product_Usage_Drop': 1.0 if req.productUsageDrop else 0.0,
             'Had_Complaint': 1.0 if req.hadComplaint else 0.0
         }
         

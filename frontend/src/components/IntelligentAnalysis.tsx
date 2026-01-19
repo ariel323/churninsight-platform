@@ -116,26 +116,6 @@ const IntelligentAnalysis: React.FC<IntelligentAnalysisProps> = ({
       });
     }
 
-    // Analizar cambios en balance (Delta_Balance)
-    if (formData?.deltaBalance < -1000) {
-      factors.push({
-        name: "Retiro Significativo de Fondos",
-        value: 0.9,
-        impact: "critical",
-        description: `Cliente retiró ${Math.abs(formData.deltaBalance).toLocaleString()}$ recientemente`,
-        recommendation:
-          "Contacto inmediato para entender razones y ofrecer alternativas",
-      });
-    } else if (formData?.deltaBalance < 0) {
-      factors.push({
-        name: "Reducción de Balance",
-        value: 0.6,
-        impact: "medium",
-        description: "Cliente está reduciendo su exposición con la empresa",
-        recommendation: "Ofrecer productos de inversión o ahorro atractivos",
-      });
-    }
-
     // Analizar cancelación de productos (Delta_NumOfProducts)
     if (formData?.deltaNumOfProducts < 0) {
       factors.push({
@@ -148,20 +128,20 @@ const IntelligentAnalysis: React.FC<IntelligentAnalysisProps> = ({
       });
     }
 
-    // Analizar transición a inactividad (Recent_Inactive)
-    if (formData?.recentInactive) {
+    // Analizar quejas recientes (Had_Complaint)
+    if (formData?.hadComplaint) {
       factors.push({
-        name: "Pasó de Activo a Inactivo",
+        name: "Quejas Recientes",
         value: 0.85,
         impact: "critical",
-        description: "Cliente dejó de utilizar activamente los servicios",
+        description: "Cliente ha registrado quejas formales",
         recommendation:
-          "Campaña de win-back urgente, identificar barreras de uso",
+          "Resolución inmediata del problema, seguimiento personalizado",
       });
     }
 
-    // Analizar caída en uso de productos (Product_Usage_Drop)
-    if (formData?.productUsageDrop) {
+    // Analizar disminución en uso de productos (inferido de deltaNumOfProducts)
+    if (formData?.deltaNumOfProducts < -1) {
       factors.push({
         name: "Disminución en Uso de Productos",
         value: 0.75,
@@ -211,10 +191,7 @@ const IntelligentAnalysis: React.FC<IntelligentAnalysisProps> = ({
     }
 
     // Segmento en Riesgo Múltiple
-    if (
-      !active &&
-      (formData?.deltaBalance < 0 || formData?.deltaNumOfProducts < 0)
-    ) {
+    if (!active && formData?.deltaNumOfProducts < 0) {
       return {
         name: "En Riesgo Crítico Multifactor",
         characteristics: [
@@ -281,13 +258,13 @@ const IntelligentAnalysis: React.FC<IntelligentAnalysisProps> = ({
       score += 40;
       factors.push("Probabilidad muy alta");
     }
-    if (formData?.recentInactive) {
+    if (!formData?.isActiveMember) {
       score += 20;
-      factors.push("Recientemente inactivo");
+      factors.push("Cliente inactivo");
     }
-    if (formData?.deltaBalance < -1000) {
+    if (formData?.deltaNumOfProducts < -1) {
       score += 15;
-      factors.push("Retiro masivo de fondos");
+      factors.push("Cancelación múltiple de productos");
     }
     if (formData?.hadComplaint) {
       score += 15;

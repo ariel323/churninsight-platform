@@ -18,9 +18,6 @@ public class PredictionHistory {
     private Double churnProbability;
     
     @Column(nullable = false)
-    private Double ageRisk;
-    
-    @Column(nullable = false)
     private Integer numOfProducts;
     
     @Column(nullable = false)
@@ -54,18 +51,9 @@ public class PredictionHistory {
     @Column
     private Boolean isActiveMember;
     
-    // Nuevos campos dinámicos para el modelo actualizado
-    @Column
-    private Double deltaBalance;
-    
+    // Campos para el modelo simplificado (19/01/2026)
     @Column
     private Double deltaNumOfProducts;
-    
-    @Column
-    private Boolean recentInactive;
-    
-    @Column
-    private Boolean productUsageDrop;
     
     @Column
     private Boolean hadComplaint;
@@ -74,12 +62,11 @@ public class PredictionHistory {
     public PredictionHistory() {
     }
     
-    public PredictionHistory(String customerId, Double churnProbability, Double ageRisk, 
+    public PredictionHistory(String customerId, Double churnProbability,
                            Integer numOfProducts, Double inactivo4070, Double productsRiskFlag, 
                            Double countryRiskFlag, String username) {
         this.customerId = customerId;
         this.churnProbability = churnProbability;
-        this.ageRisk = ageRisk;
         this.numOfProducts = numOfProducts;
         this.inactivo4070 = inactivo4070;
         this.productsRiskFlag = productsRiskFlag;
@@ -111,14 +98,6 @@ public class PredictionHistory {
     
     public void setChurnProbability(Double churnProbability) {
         this.churnProbability = churnProbability;
-    }
-    
-    public Double getAgeRisk() {
-        return ageRisk;
-    }
-    
-    public void setAgeRisk(Double ageRisk) {
-        this.ageRisk = ageRisk;
     }
     
     public Integer getNumOfProducts() {
@@ -210,37 +189,13 @@ public class PredictionHistory {
         this.isActiveMember = isActiveMember;
     }
     
-    // Getters y setters para campos dinámicos
-    public Double getDeltaBalance() {
-        return deltaBalance;
-    }
-    
-    public void setDeltaBalance(Double deltaBalance) {
-        this.deltaBalance = deltaBalance;
-    }
-    
+    // Getters y setters para campos del modelo simplificado
     public Double getDeltaNumOfProducts() {
         return deltaNumOfProducts;
     }
     
     public void setDeltaNumOfProducts(Double deltaNumOfProducts) {
         this.deltaNumOfProducts = deltaNumOfProducts;
-    }
-    
-    public Boolean getRecentInactive() {
-        return recentInactive;
-    }
-    
-    public void setRecentInactive(Boolean recentInactive) {
-        this.recentInactive = recentInactive;
-    }
-    
-    public Boolean getProductUsageDrop() {
-        return productUsageDrop;
-    }
-    
-    public void setProductUsageDrop(Boolean productUsageDrop) {
-        this.productUsageDrop = productUsageDrop;
     }
     
     public Boolean getHadComplaint() {

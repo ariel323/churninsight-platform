@@ -20,21 +20,15 @@ public class ChurnPredictionService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public static class PredictionRequest {
-        private double ageRisk;
+        // MODELO SIMPLIFICADO - Solo 6 variables (actualizado 19/01/2026)
         private double numOfProducts;
         private double inactivo4070;
         private double productsRiskFlag;
         private double countryRiskFlag;
-        private double deltaBalance;
         private double deltaNumOfProducts;
-        private boolean recentInactive;
-        private boolean productUsageDrop;
         private boolean hadComplaint;
 
         // Getters y setters
-        public double getAgeRisk() { return ageRisk; }
-        public void setAgeRisk(double ageRisk) { this.ageRisk = ageRisk; }
-        
         public double getNumOfProducts() { return numOfProducts; }
         public void setNumOfProducts(double numOfProducts) { this.numOfProducts = numOfProducts; }
         
@@ -47,17 +41,8 @@ public class ChurnPredictionService {
         public double getCountryRiskFlag() { return countryRiskFlag; }
         public void setCountryRiskFlag(double countryRiskFlag) { this.countryRiskFlag = countryRiskFlag; }
         
-        public double getDeltaBalance() { return deltaBalance; }
-        public void setDeltaBalance(double deltaBalance) { this.deltaBalance = deltaBalance; }
-        
         public double getDeltaNumOfProducts() { return deltaNumOfProducts; }
         public void setDeltaNumOfProducts(double deltaNumOfProducts) { this.deltaNumOfProducts = deltaNumOfProducts; }
-        
-        public boolean isRecentInactive() { return recentInactive; }
-        public void setRecentInactive(boolean recentInactive) { this.recentInactive = recentInactive; }
-        
-        public boolean isProductUsageDrop() { return productUsageDrop; }
-        public void setProductUsageDrop(boolean productUsageDrop) { this.productUsageDrop = productUsageDrop; }
         
         public boolean isHadComplaint() { return hadComplaint; }
         public void setHadComplaint(boolean hadComplaint) { this.hadComplaint = hadComplaint; }
@@ -67,17 +52,13 @@ public class ChurnPredictionService {
         try {
             String url = pythonApiUrl + "/predict";
             
-            // Crear payload JSON
+            // Crear payload JSON - MODELO SIMPLIFICADO (6 variables)
             Map<String, Object> payload = new HashMap<>();
-            payload.put("ageRisk", request.getAgeRisk());
             payload.put("numOfProducts", request.getNumOfProducts());
             payload.put("inactivo4070", request.getInactivo4070());
             payload.put("productsRiskFlag", request.getProductsRiskFlag());
             payload.put("countryRiskFlag", request.getCountryRiskFlag());
-            payload.put("deltaBalance", request.getDeltaBalance());
             payload.put("deltaNumOfProducts", request.getDeltaNumOfProducts());
-            payload.put("recentInactive", request.isRecentInactive());
-            payload.put("productUsageDrop", request.isProductUsageDrop());
             payload.put("hadComplaint", request.isHadComplaint());
             
             // Llamada HTTP al Python

@@ -12,15 +12,11 @@ public class ChurnPredictionRequest {
     private int tenure;
     private int creditScore;
     
-    // Nuevos campos dinámicos (opcionales, con valores por defecto)
-    private Double deltaBalance;
+    // Campos opcionales para el modelo simplificado
     private Double deltaNumOfProducts;
-    private Boolean recentInactive;
-    private Boolean productUsageDrop;
     private Boolean hadComplaint;
     
     // Características derivadas (computadas en el backend)
-    private double ageRisk;
     private double inactivo4070;
     private double productsRiskFlag;
     private double countryRiskFlag;
@@ -48,31 +44,20 @@ public class ChurnPredictionRequest {
     public void setCreditScore(int creditScore) { this.creditScore = creditScore; }
     
     // Getters para características derivadas
-    public double getAgeRisk() { return ageRisk; }
     public double getInactivo4070() { return inactivo4070; }
     public double getProductsRiskFlag() { return productsRiskFlag; }
     public double getCountryRiskFlag() { return countryRiskFlag; }
     
-    // Método para computar características derivadas
+    // Método para computar características derivadas - MODELO SIMPLIFICADO
     public void computeDerivedFeatures() {
-        this.ageRisk = (age >= 40 && age <= 70) ? 1.0 : 0.0;
         this.inactivo4070 = (age >= 40 && age <= 70 && isActiveMember == 0) ? 1.0 : 0.0;
         this.productsRiskFlag = (numOfProducts >= 3) ? 1.0 : 0.0;
         this.countryRiskFlag = "Germany".equals(country) ? 1.0 : 0.0;
     }
     
-    // Getters y setters para campos dinámicos
-    public Double getDeltaBalance() { return deltaBalance != null ? deltaBalance : 0.0; }
-    public void setDeltaBalance(Double deltaBalance) { this.deltaBalance = deltaBalance; }
-    
+    // Getters y setters para campos opcionales
     public Double getDeltaNumOfProducts() { return deltaNumOfProducts != null ? deltaNumOfProducts : 0.0; }
     public void setDeltaNumOfProducts(Double deltaNumOfProducts) { this.deltaNumOfProducts = deltaNumOfProducts; }
-    
-    public Boolean getRecentInactive() { return recentInactive != null ? recentInactive : false; }
-    public void setRecentInactive(Boolean recentInactive) { this.recentInactive = recentInactive; }
-    
-    public Boolean getProductUsageDrop() { return productUsageDrop != null ? productUsageDrop : false; }
-    public void setProductUsageDrop(Boolean productUsageDrop) { this.productUsageDrop = productUsageDrop; }
     
     public Boolean getHadComplaint() { return hadComplaint != null ? hadComplaint : false; }
     public void setHadComplaint(Boolean hadComplaint) { this.hadComplaint = hadComplaint; }

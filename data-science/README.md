@@ -79,26 +79,29 @@ El backend Java inicia automáticamente el script Python al arrancar (`@PostCons
 
 ## 📊 Contrato de Predicción
 
+### Modelo Simplificado (actualizado 19/01/2026)
+
+El modelo utiliza **6 variables** en lugar de las 10 anteriores, eliminando features redundantes para mayor eficiencia.
+
 ### Entrada (Features)
 
-El modelo requiere un array de 5 valores numéricos en el siguiente orden:
-
 ```json
-[
-    Age_Risk,          // 0 o 1: Si el cliente está en rango de edad de riesgo (40-70 años)
-    NumOfProducts,     // Número de productos contratados (1-4)
-    Inactivo_40_70,    // 0 o 1: Si está inactivo y en rango 40-70 años
-    Products_Risk_Flag, // 0 o 1: Si tiene 3+ productos (riesgo)
-    Country_Risk_Flag  // 0 o 1: Si es de Alemania (país de mayor riesgo)
-]
+{
+  "numOfProducts": 3, // Número de productos contratados (1-4)
+  "inactivo4070": 1, // 0 o 1: Si está inactivo y en rango 40-70 años
+  "productsRiskFlag": 1, // 0 o 1: Si tiene 3+ productos
+  "countryRiskFlag": 0, // 0 o 1: Si es de Alemania
+  "deltaNumOfProducts": 0.0, // Cambio en número de productos (opcional, default 0)
+  "hadComplaint": false // true/false: Si ha tenido quejas (opcional, default false)
+}
 ```
 
 ### Salida (Response)
 
 ```json
 {
-  "churn_probability": 0.75, // Probabilidad de abandono (0.0 - 1.0)
-  "customer_id": "cliente_123" // ID único del cliente
+  "prediction": 1, // 0=No churn, 1=Churn (basado en umbral 0.58)
+  "probability": 0.75 // Probabilidad de abandono (0.0 - 1.0)
 }
 ```
 
@@ -106,34 +109,41 @@ El modelo requiere un array de 5 valores numéricos en el siguiente orden:
 
 ## 🧪 Pruebas Locales
 
-### 1. Probar el predictor Python directamente:
+### 1. Probar el predictor FastAPI directamente:
 
 ```bash
-python predictor.py
+cd data-science
+python predictor_fastapi.py
 ```
 
-El servidor Py4J debería iniciarse y esperar conexiones.
+El servidor FastAPI debería iniciarse en http://localhost:8000
 
-### 2. Probar desde el backend Java:
+### 2. Verificar el health check:
+
+```bash
+curl http://localhost:8000/health
+```
+
+### 3. Probar el endpoint de predicción:
+
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "numOfProducts": 3,
+    "inactivo4070": 1,
+    "productsRiskFlag": 1,
+    "countryRiskFlag": 1,
+    "deltaNumOfProducts": 0.0,
+    "hadComplaint": false
+  }'
+```
+
+### 4. Desde el backend Java:
 
 ```bash
 cd ../backend-java
 mvn spring-boot:run
-```
-
-### 3. Probar el endpoint REST:
-
-```bash
-curl -X POST http://localhost:8080/api/churn/predict \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "ageRisk": 1,
-    "numOfProducts": 3,
-    "inactivo4070": 1,
-    "productsRiskFlag": 1,
-    "countryRiskFlag": 1
-  }'
 ```
 
 ---

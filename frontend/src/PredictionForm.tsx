@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import {
   TextField,
   Button,
@@ -17,22 +17,18 @@ import { useForm, Controller } from "react-hook-form";
 import { ChurnPredictionRequest } from "./types";
 
 // Interfaz interna para el formulario (datos que ingresa el usuario)
-interface ClientFormData extends Omit<
-  ChurnPredictionRequest,
-  "recentInactive" | "productUsageDrop" | "hadComplaint"
-> {
-  recentInactive: number;
-  productUsageDrop: number;
+interface ClientFormData extends Omit<ChurnPredictionRequest, "hadComplaint"> {
   hadComplaint: number;
 }
 
-// Tipos alineados con el modelo de backend/data-science
+// Tipos alineados con el modelo de backend/data-science (modelo simplificado)
 export interface ChurnFormData {
-  ageRisk: number;
   numOfProducts: number;
   inactivo4070: number;
   productsRiskFlag: number;
   countryRiskFlag: number;
+  deltaNumOfProducts: number;
+  hadComplaint: boolean;
 }
 
 interface PredictionFormProps {
@@ -59,10 +55,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
       estimatedSalary: 0,
       tenure: 0,
       creditScore: 350,
-      deltaBalance: 0,
       deltaNumOfProducts: 0,
-      recentInactive: 0,
-      productUsageDrop: 0,
       hadComplaint: 0,
     },
   });
@@ -80,10 +73,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
         estimatedSalary: data.estimatedSalary,
         tenure: data.tenure,
         creditScore: data.creditScore,
-        deltaBalance: data.deltaBalance,
         deltaNumOfProducts: data.deltaNumOfProducts,
-        recentInactive: data.recentInactive === 1,
-        productUsageDrop: data.productUsageDrop === 1,
         hadComplaint: data.hadComplaint === 1,
       };
 
@@ -414,23 +404,6 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
               )}
             />
           </Box>
-          {/* Variación de balance */}
-          <Box>
-            <Controller
-              name="deltaBalance"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  type="number"
-                  fullWidth
-                  label="Cambio reciente en balance (%)"
-                  placeholder="Ej: -15 (bajó 15%)"
-                  helperText="Porcentaje de cambio en el saldo respecto al mes anterior"
-                />
-              )}
-            />
-          </Box>
           {/* Variación de productos */}
           <Box>
             <Controller
@@ -445,50 +418,6 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                   placeholder="Ej: -1 (canceló 1 producto)"
                   helperText="Número de productos ganados o perdidos recientemente"
                 />
-              )}
-            />
-          </Box>
-          {/* ¿Pasó de activo a inactivo? */}
-          <Box>
-            <Controller
-              name="recentInactive"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth>
-                  <InputLabel>¿Pasó de activo a inactivo?</InputLabel>
-                  <Select {...field} label="¿Pasó de activo a inactivo?">
-                    <MenuItem value={0}>No</MenuItem>
-                    <MenuItem value={1}>Sí</MenuItem>
-                  </Select>
-                  <Typography
-                    variant="caption"
-                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
-                  >
-                    Indica si el cliente dejó de usar la cuenta recientemente
-                  </Typography>
-                </FormControl>
-              )}
-            />
-          </Box>
-          {/* ¿Dejó de usar algún producto? */}
-          <Box>
-            <Controller
-              name="productUsageDrop"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth>
-                  <InputLabel>¿Dejó de usar algún producto?</InputLabel>
-                  <Select {...field} label="¿Dejó de usar algún producto?">
-                    <MenuItem value={0}>No</MenuItem>
-                    <MenuItem value={1}>Sí</MenuItem>
-                  </Select>
-                  <Typography
-                    variant="caption"
-                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
-                  >
-                    Indica si el cliente dejó de usar algún producto bancario
-                  </Typography>
-                </FormControl>
               )}
             />
           </Box>

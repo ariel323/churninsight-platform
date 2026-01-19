@@ -40,17 +40,13 @@ public class ChurnController {
         // Computar características derivadas
         request.computeDerivedFeatures();
         
-        // Crear request para el API de Python
+        // Crear request para el API de Python - MODELO SIMPLIFICADO (6 variables)
         ChurnPredictionService.PredictionRequest predictionRequest = new ChurnPredictionService.PredictionRequest();
-        predictionRequest.setAgeRisk(request.getAgeRisk());
         predictionRequest.setNumOfProducts(request.getNumOfProducts());
         predictionRequest.setInactivo4070(request.getInactivo4070());
         predictionRequest.setProductsRiskFlag(request.getProductsRiskFlag());
         predictionRequest.setCountryRiskFlag(request.getCountryRiskFlag());
-        predictionRequest.setDeltaBalance(request.getDeltaBalance());
         predictionRequest.setDeltaNumOfProducts(request.getDeltaNumOfProducts());
-        predictionRequest.setRecentInactive(request.getRecentInactive());
-        predictionRequest.setProductUsageDrop(request.getProductUsageDrop());
         predictionRequest.setHadComplaint(request.getHadComplaint());
         
         double probability = service.predictChurn(predictionRequest);
@@ -61,7 +57,6 @@ public class ChurnController {
         PredictionHistory history = new PredictionHistory(
             customerId,
             probability,
-            request.getAgeRisk(),
             (int) request.getNumOfProducts(),
             request.getInactivo4070(),
             request.getProductsRiskFlag(),
@@ -69,18 +64,13 @@ public class ChurnController {
             username
         );
         
-        // Guardar nuevos campos (Fase 4)
+        // Guardar campos adicionales
         history.setBalance(request.getBalance());
         history.setEstimatedSalary(request.getEstimatedSalary());
         history.setCountry(request.getCountry());
         history.setTenure(request.getTenure());
         history.setIsActiveMember(request.getIsActiveMember() == 1);
-        
-        // Guardar nuevos campos dinámicos
-        history.setDeltaBalance(request.getDeltaBalance());
         history.setDeltaNumOfProducts(request.getDeltaNumOfProducts());
-        history.setRecentInactive(request.getRecentInactive());
-        history.setProductUsageDrop(request.getProductUsageDrop());
         history.setHadComplaint(request.getHadComplaint());
         
         System.out.println("=== DEBUG: Guardando isActiveMember = " + history.getIsActiveMember());

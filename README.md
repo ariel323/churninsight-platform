@@ -292,22 +292,24 @@ spring:
 
 - **Algoritmo**: XGBoost Classifier
 - **Precisión**: ~85% en conjunto de validación
-- **Características**: 9 variables predictoras (5 derivadas + 4 originales)
-- **Formato**: PKL (Pickle) con integración Python vía Py4J
+- **Características**: **6 variables predictoras** (modelo simplificado desde 19/01/2026)
+- **Formato**: PMML con integración FastAPI
 - **Entrenamiento**: Dataset bancario anonimizado
 - **Umbral óptimo**: 0.58 (validado para maximizar recall)
+- **Versión**: sklearn2pmml 0.126.0
 
-#### Variables Predictoras
+#### Variables Predictoras (Modelo Simplificado)
 
-**Variables Derivadas (Risk Flags):**
+**Variables del Modelo (6 features):**
 
-- **Age_Risk**: Indicador binario (1 si edad entre 40-70 años, 0 en caso contrario)
 - **NumOfProducts**: Número de productos contratados por el cliente (1-4)
 - **Inactivo_40_70**: Indicador binario (1 si cliente de 40-70 años e inactivo, 0 en caso contrario)
 - **Products_Risk_Flag**: Indicador binario (1 si tiene 3 o más productos, 0 en caso contrario)
 - **Country_Risk_Flag**: Indicador binario (1 si cliente de Germany, 0 en caso contrario)
+- **Delta_NumOfProducts**: Cambio en el número de productos del cliente
+- **Had_Complaint**: Indicador binario (1 si ha tenido quejas previas, 0 en caso contrario)
 
-**Variables Originales del Cliente:**
+**Variables de Contexto (no usadas en predicción, solo almacenadas):**
 
 - **Balance**: Saldo actual de la cuenta del cliente
 - **EstimatedSalary**: Salario estimado del cliente

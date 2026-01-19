@@ -10,10 +10,8 @@ export interface ChurnPredictionRequest {
   estimatedSalary: number;
   tenure: number;
   creditScore: number;
-  deltaBalance?: number;
+  // Campos opcionales para modelo simplificado (19/01/2026)
   deltaNumOfProducts?: number;
-  recentInactive?: boolean;
-  productUsageDrop?: boolean;
   hadComplaint?: boolean;
 }
 
@@ -24,7 +22,6 @@ export interface ChurnPredictionResponse {
 }
 
 export interface ChurnFormData {
-  ageRisk: number;
   numOfProducts: number;
   inactivo4070: number;
   productsRiskFlag: number;
@@ -35,10 +32,7 @@ export interface ChurnFormData {
   creditScore: number;
   country: string;
   isActiveMember: boolean; // Backend espera boolean (true/false)
-  deltaBalance: number;
   deltaNumOfProducts: number;
-  recentInactive: boolean;
-  productUsageDrop: boolean;
   hadComplaint: boolean;
 }
 
