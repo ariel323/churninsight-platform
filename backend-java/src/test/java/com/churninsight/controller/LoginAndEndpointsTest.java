@@ -159,8 +159,8 @@ class LoginAndEndpointsTest {
     @Test
     @DisplayName("Predicción de churn con token de analista y guardado en historial")
     void predictChurnWithAnalystToken() throws Exception {
-        // Mockear predicción
-        when(churnPredictionService.predictChurn(any(double[].class))).thenReturn(0.65);
+        // Mockear predicción (usa PredictionRequest en lugar de double[])
+        when(churnPredictionService.predictChurn(any(ChurnPredictionService.PredictionRequest.class))).thenReturn(0.65);
 
         // Asegurar usuario analista (si no existe, crearlo)
         try {

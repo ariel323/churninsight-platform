@@ -107,7 +107,6 @@ public class ChurnController {
                 h.getId(),
                 h.getCustomerId(),
                 h.getChurnProbability(),
-                h.getAgeRisk(),
                 h.getNumOfProducts(),
                 h.getInactivo4070(),
                 h.getProductsRiskFlag(),
@@ -138,7 +137,6 @@ public class ChurnController {
                 h.getId(),
                 h.getCustomerId(),
                 h.getChurnProbability(),
-                h.getAgeRisk(),
                 h.getNumOfProducts(),
                 h.getInactivo4070(),
                 h.getProductsRiskFlag(),
@@ -192,7 +190,6 @@ public class ChurnController {
                 h.getId(),
                 h.getCustomerId(),
                 h.getChurnProbability(),
-                h.getAgeRisk(),
                 h.getNumOfProducts(),
                 h.getInactivo4070(),
                 h.getProductsRiskFlag(),
@@ -221,7 +218,6 @@ class PredictionHistoryDto {
     private Long id;
     private String customerId;
     private Double churnProbability;
-    private Double ageRisk;
     private Integer numOfProducts;
     private Double inactivo4070;
     private Double productsRiskFlag;
@@ -235,12 +231,11 @@ class PredictionHistoryDto {
     private Boolean isActiveMember;
     
     public PredictionHistoryDto(Long id, String customerId, Double churnProbability, 
-                               Double ageRisk, Integer numOfProducts, Double inactivo4070,
+                               Integer numOfProducts, Double inactivo4070,
                                Double productsRiskFlag, Double countryRiskFlag, String predictionDate) {
         this.id = id;
         this.customerId = customerId;
         this.churnProbability = churnProbability;
-        this.ageRisk = ageRisk;
         this.numOfProducts = numOfProducts;
         this.inactivo4070 = inactivo4070;
         this.productsRiskFlag = productsRiskFlag;
@@ -250,14 +245,13 @@ class PredictionHistoryDto {
     
     // Constructor completo con nuevos campos
     public PredictionHistoryDto(Long id, String customerId, Double churnProbability, 
-                               Double ageRisk, Integer numOfProducts, Double inactivo4070,
+                               Integer numOfProducts, Double inactivo4070,
                                Double productsRiskFlag, Double countryRiskFlag, String predictionDate,
                                Double balance, Double estimatedSalary, String country, 
                                Integer tenure, Boolean isActiveMember) {
         this.id = id;
         this.customerId = customerId;
         this.churnProbability = churnProbability;
-        this.ageRisk = ageRisk;
         this.numOfProducts = numOfProducts;
         this.inactivo4070 = inactivo4070;
         this.productsRiskFlag = productsRiskFlag;
@@ -274,7 +268,6 @@ class PredictionHistoryDto {
     public Long getId() { return id; }
     public String getCustomerId() { return customerId; }
     public Double getChurnProbability() { return churnProbability; }
-    public Double getAgeRisk() { return ageRisk; }
     public Integer getNumOfProducts() { return numOfProducts; }
     public Double getInactivo4070() { return inactivo4070; }
     public Double getProductsRiskFlag() { return productsRiskFlag; }
