@@ -68,7 +68,7 @@ const HistoryPanel: React.FC = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [viewMode, setViewMode] = useState<"mine" | "all" | "analysts">("mine");
   const [analystSummaries, setAnalystSummaries] = useState<AnalystSummary[]>(
-    []
+    [],
   );
   const [selectedAnalyst, setSelectedAnalyst] = useState<string>("");
   const [analystPage, setAnalystPage] = useState<Page<PredictionHistory>>({
@@ -87,7 +87,7 @@ const HistoryPanel: React.FC = () => {
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
   const [granularity, setGranularity] = useState<"monthly" | "yearly">(
-    "monthly"
+    "monthly",
   );
   const [periodReport, setPeriodReport] = useState<AnalystPeriodReport[]>([]);
 
@@ -150,7 +150,7 @@ const HistoryPanel: React.FC = () => {
             const page = await fetchHistoryByAnalyst(
               summaries[0].username,
               0,
-              50
+              50,
             );
             setAnalystPage(page);
             // Sugerir rango del mes actual por defecto
@@ -160,7 +160,7 @@ const HistoryPanel: React.FC = () => {
             const fmt = (d: Date) =>
               `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
                 2,
-                "0"
+                "0",
               )}-${String(d.getDate()).padStart(2, "0")}`;
             setFromDate(fmt(start));
             setToDate(fmt(end));
@@ -182,14 +182,14 @@ const HistoryPanel: React.FC = () => {
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
-    page: number
+    page: number,
   ) => {
     loadAllHistory(page - 1);
   };
 
   const handleViewModeChange = (
     _event: React.SyntheticEvent,
-    newValue: "mine" | "all" | "analysts"
+    newValue: "mine" | "all" | "analysts",
   ) => {
     setViewMode(newValue);
     setFilters({ riskLevel: "all" });
@@ -349,7 +349,7 @@ const HistoryPanel: React.FC = () => {
     // Generar nombre de archivo con fecha
     const today = new Date();
     const fileName = `ChurnInsight_${today.getFullYear()}-${String(
-      today.getMonth() + 1
+      today.getMonth() + 1,
     ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}.xlsx`;
 
     // Descargar archivo
@@ -399,81 +399,9 @@ const HistoryPanel: React.FC = () => {
 
     const today = new Date();
     const fileName = `ChurnInsight_${sheetName}_${today.getFullYear()}-${String(
-      today.getMonth() + 1
+      today.getMonth() + 1,
     ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}.xlsx`;
     XLSX.writeFile(wb, fileName);
-  };
-
-  // Exportar historial del analista del rango completo (todas las páginas)
-  const [exportingRange, setExportingRange] = useState(false);
-  const handleExportAnalystRangeToExcel = async () => {
-    if (!selectedAnalyst || !fromDate || !toDate) return;
-    setExportingRange(true);
-    try {
-      const size = 200; // tamaño de página grande para acelerar
-      let page = 0;
-      const rows: PredictionHistory[] = [];
-      // Obtener la primera página para conocer totalPages
-      const first = await fetchHistoryByAnalystRange(
-        selectedAnalyst,
-        fromDate,
-        toDate,
-        page,
-        size
-      );
-      rows.push(...first.content);
-      const totalPages = first.totalPages;
-      for (let p = 1; p < totalPages; p++) {
-        const next = await fetchHistoryByAnalystRange(
-          selectedAnalyst,
-          fromDate,
-          toDate,
-          p,
-          size
-        );
-        rows.push(...next.content);
-      }
-
-      if (rows.length === 0) return;
-      const exportData = rows.map((item) => {
-        const insight = getBusinessInsight(item);
-        const semaphore = getRiskSemaphore(item.churnProbability);
-        return {
-          "ID Cliente": item.customerId,
-          Productos: item.numOfProducts,
-          "Causal Técnica": insight.causalTecnica,
-          "Causal de Negocio": insight.causalNegocio,
-          "Acción Sugerida": insight.accionSugerida,
-          Prioridad: insight.prioridad.toUpperCase(),
-          "Impacto Estimado": insight.impactoEstimado,
-          "Probabilidad de Churn": `${(item.churnProbability * 100).toFixed(
-            1
-          )}%`,
-          "Nivel de Riesgo": semaphore.label,
-          "Fecha de Predicción": formatDate(item.predictionDate),
-        };
-      });
-
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      ws["!cols"] = [
-        { wch: 20 },
-        { wch: 10 },
-        { wch: 35 },
-        { wch: 25 },
-        { wch: 30 },
-        { wch: 12 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 20 },
-      ];
-      const wb = XLSX.utils.book_new();
-      const sheetName = `Historial_Rango_${selectedAnalyst}`;
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      const fileName = `ChurnInsight_${sheetName}_${fromDate}_a_${toDate}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-    } finally {
-      setExportingRange(false);
-    }
   };
 
   // Exportar resumen por periodo a Excel
@@ -481,7 +409,7 @@ const HistoryPanel: React.FC = () => {
     if (!periodReport || periodReport.length === 0) return;
     const exportData = periodReport.map((r) => ({
       Año: r.year,
-      Mes: granularity === "monthly" ? r.month ?? "" : "",
+      Mes: granularity === "monthly" ? (r.month ?? "") : "",
       "Total Análisis": r.totalAnalyses,
       "Alto Riesgo": r.highRiskCount,
       "Promedio (%)": (r.averageChurnProbability * 100).toFixed(1),
@@ -502,7 +430,7 @@ const HistoryPanel: React.FC = () => {
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     const today = new Date();
     const fileName = `ChurnInsight_${sheetName}_${today.getFullYear()}-${String(
-      today.getMonth() + 1
+      today.getMonth() + 1,
     ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
@@ -604,7 +532,7 @@ const HistoryPanel: React.FC = () => {
                         {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 6,
-                        }
+                        },
                       )}M`
                     : `$${kpis.capitalAtRisk.toLocaleString("es-ES", {
                         minimumFractionDigits: 2,
@@ -670,7 +598,7 @@ const HistoryPanel: React.FC = () => {
         )}
 
       {/* Filtros */}
-      {!loading && history.length > 0 && (
+      {!loading && history.length > 0 && viewMode !== "analysts" && (
         <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
           <FormControl sx={{ minWidth: 200 }}>
             <InputLabel>Nivel de Riesgo</InputLabel>
@@ -786,14 +714,14 @@ const HistoryPanel: React.FC = () => {
                     fromDate,
                     toDate,
                     0,
-                    50
+                    50,
                   );
                   setAnalystPage(page);
                   const summary = await fetchAnalystPeriodReport(
                     selectedAnalyst,
                     fromDate,
                     toDate,
-                    granularity
+                    granularity,
                   );
                   setPeriodReport(summary);
                 } finally {
@@ -803,46 +731,67 @@ const HistoryPanel: React.FC = () => {
             >
               Aplicar
             </Button>
-
-            {/* KPIs compactos por analista */}
-            {selectedAnalyst && (
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                {analystSummaries
-                  .filter((a) => a.username === selectedAnalyst)
-                  .map((a) => (
-                    <Card key={a.username} elevation={2}>
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {a.fullName || a.username}
-                        </Typography>
-                        {a.email && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: "block", mb: 1 }}
-                          >
-                            {a.email}
-                          </Typography>
-                        )}
-                        <Typography variant="body2">
-                          Total análisis: <b>{a.totalAnalyses}</b>
-                        </Typography>
-                        <Typography variant="body2">
-                          Último:{" "}
-                          <b>
-                            {new Date(a.lastPredictionDate).toLocaleString(
-                              "es-ES"
-                            )}
-                          </b>
-                        </Typography>
-                        <Typography variant="body2">
-                          Riesgo medio:{" "}
-                          <b>{(a.averageChurnProbability * 100).toFixed(1)}%</b>
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </Box>
+            {/* Botón para quitar filtros */}
+            {(analystSearch ||
+              fromDate !== "" ||
+              toDate !== "" ||
+              selectedAnalyst !== "") && (
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={async () => {
+                  setAnalystSearch("");
+                  // Si hay analistas, seleccionar el primero y restablecer fechas al mes actual sin cargar resumen
+                  if (analystSummaries.length > 0) {
+                    const firstAnalyst = analystSummaries[0].username;
+                    setSelectedAnalyst(firstAnalyst);
+                    const now = new Date();
+                    const start = new Date(
+                      now.getFullYear(),
+                      now.getMonth(),
+                      1,
+                    );
+                    const end = new Date(
+                      now.getFullYear(),
+                      now.getMonth() + 1,
+                      0,
+                    );
+                    const fmt = (d: Date) =>
+                      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    setFromDate(fmt(start));
+                    setToDate(fmt(end));
+                    setGranularity("monthly");
+                    setPeriodReport([]);
+                    setLoading(true);
+                    try {
+                      const page = await fetchHistoryByAnalyst(
+                        firstAnalyst,
+                        0,
+                        50,
+                      );
+                      setAnalystPage(page);
+                    } finally {
+                      setLoading(false);
+                    }
+                  } else {
+                    setSelectedAnalyst("");
+                    setFromDate("");
+                    setToDate("");
+                    setGranularity("monthly");
+                    setAnalystPage({
+                      content: [],
+                      totalElements: 0,
+                      totalPages: 0,
+                      number: 0,
+                      size: 50,
+                    });
+                    setPeriodReport([]);
+                  }
+                }}
+                sx={{ ml: 1 }}
+              >
+                Quitar filtros
+              </Button>
             )}
           </Box>
 
@@ -873,29 +822,22 @@ const HistoryPanel: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<FileDownload />}
-                  onClick={handleExportPeriodReportToExcel}
-                  disabled={periodReport.length === 0}
-                >
-                  Exportar Resumen
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<FileDownload />}
-                  onClick={handleExportAnalystRangeToExcel}
+                  onClick={() => {
+                    if (periodReport && periodReport.length > 0) {
+                      handleExportPeriodReportToExcel();
+                    } else if (
+                      analystPage.content &&
+                      analystPage.content.length > 0
+                    ) {
+                      handleExportAnalystToExcel();
+                    }
+                  }}
                   disabled={
-                    exportingRange || !selectedAnalyst || !fromDate || !toDate
+                    (!periodReport || periodReport.length === 0) &&
+                    (!analystPage.content || analystPage.content.length === 0)
                   }
                 >
-                  Exportar Rango Completo
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<FileDownload />}
-                  onClick={handleExportAnalystToExcel}
-                  disabled={analystPage.content.length === 0}
-                  sx={{ bgcolor: "#1e3c72", "&:hover": { bgcolor: "#2a5298" } }}
-                >
-                  Exportar Excel
+                  Exportar Resumen
                 </Button>
               </Box>
             </Box>
@@ -1020,7 +962,7 @@ const HistoryPanel: React.FC = () => {
                     const page = await fetchHistoryByAnalyst(
                       selectedAnalyst,
                       p - 1,
-                      analystPage.size
+                      analystPage.size,
                     );
                     setAnalystPage(page);
                   } finally {
@@ -1133,8 +1075,8 @@ const HistoryPanel: React.FC = () => {
                           getBusinessInsight(item).prioridad === "alta"
                             ? "error"
                             : getBusinessInsight(item).prioridad === "media"
-                            ? "warning"
-                            : "default"
+                              ? "warning"
+                              : "default"
                         }
                         size="small"
                         sx={{ fontWeight: 500 }}
@@ -1153,8 +1095,8 @@ const HistoryPanel: React.FC = () => {
                               getBusinessInsight(item).prioridad === "alta"
                                 ? "#d32f2f"
                                 : getBusinessInsight(item).prioridad === "media"
-                                ? "#ed6c02"
-                                : "#757575",
+                                  ? "#ed6c02"
+                                  : "#757575",
                           }}
                         />
                         <Typography
@@ -1237,8 +1179,8 @@ const HistoryPanel: React.FC = () => {
             {viewMode === "all" && totalElements > 0
               ? `de ${totalElements.toLocaleString()}`
               : viewMode === "mine" && filteredHistory.length !== history.length
-              ? `de ${history.length}`
-              : ""}{" "}
+                ? `de ${history.length}`
+                : ""}{" "}
             predicciones
           </Typography>
         </Box>
