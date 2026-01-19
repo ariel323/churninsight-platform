@@ -19,14 +19,27 @@ import {
   Card,
   CardContent,
   Button,
+  Tabs,
+  Tab,
+  Pagination,
+  TextField,
 } from "@mui/material";
 import { PersonOutline, Lightbulb, FileDownload } from "@mui/icons-material";
 import * as XLSX from "xlsx";
 import {
   fetchHistory,
+  fetchAllHistory,
   fetchKPIs,
   PredictionHistory,
   KPIsData,
+  isAdmin,
+  AnalystSummary,
+  fetchAnalystSummaries,
+  fetchHistoryByAnalyst,
+  fetchHistoryByAnalystRange,
+  Page,
+  AnalystPeriodReport,
+  fetchAnalystPeriodReport,
 } from "../services/api";
 import CustomerRiskProfile from "./CustomerRiskProfile";
 
@@ -40,6 +53,7 @@ interface BusinessInsight {
 
 const HistoryPanel: React.FC = () => {
   const [history, setHistory] = useState<PredictionHistory[]>([]);
+  const [allHistory, setAllHistory] = useState<PredictionHistory[]>([]);
   const [kpis, setKpis] = useState<KPIsData>({
     totalHighRiskClients: 0,
     capitalAtRisk: 0,
@@ -52,11 +66,134 @@ const HistoryPanel: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] =
     useState<PredictionHistory | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [viewMode, setViewMode] = useState<"mine" | "all" | "analysts">("mine");
+  const [analystSummaries, setAnalystSummaries] = useState<AnalystSummary[]>(
+    []
+  );
+  const [selectedAnalyst, setSelectedAnalyst] = useState<string>("");
+  const [analystPage, setAnalystPage] = useState<Page<PredictionHistory>>({
+    content: [],
+    totalElements: 0,
+    totalPages: 0,
+    number: 0,
+    size: 50,
+  });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const pageSize = 100;
+  const [analystSearch, setAnalystSearch] = useState("");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+  const [granularity, setGranularity] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
+  const [periodReport, setPeriodReport] = useState<AnalystPeriodReport[]>([]);
+
+  const filteredAnalysts = useMemo(() => {
+    const q = analystSearch.trim().toLowerCase();
+    if (!q) return analystSummaries;
+    return analystSummaries.filter((a) => {
+      const name = (a.fullName || "").toLowerCase();
+      const user = (a.username || "").toLowerCase();
+      const mail = (a.email || "").toLowerCase();
+      return name.includes(q) || user.includes(q) || (mail && mail.includes(q));
+    });
+  }, [analystSummaries, analystSearch]);
+
+  const loadHistory = async () => {
+    setLoading(true);
+    const data = await fetchHistory();
+    setHistory(data);
+    setLoading(false);
+  };
+
+  const loadAllHistory = async (page: number = 0) => {
+    setLoading(true);
+    const data = await fetchAllHistory(page, pageSize);
+    setAllHistory(data.content);
+    setTotalElements(data.totalElements);
+    setTotalPages(data.totalPages);
+    setCurrentPage(page);
+    setLoading(false);
+  };
+
+  const loadKPIs = async () => {
+    const data = await fetchKPIs();
+    setKpis(data);
+  };
 
   useEffect(() => {
+    // Verificar si el usuario es admin
+    const adminStatus = isAdmin();
+    setUserIsAdmin(adminStatus);
+    console.log("[HistoryPanel] Usuario es admin:", adminStatus);
+
     loadHistory();
     loadKPIs();
   }, []);
+
+  useEffect(() => {
+    if (viewMode === "all" && userIsAdmin) {
+      loadAllHistory(0);
+    } else if (viewMode === "analysts" && userIsAdmin) {
+      // cargar resumen de analistas
+      (async () => {
+        setLoading(true);
+        try {
+          const summaries = await fetchAnalystSummaries();
+          setAnalystSummaries(summaries);
+          // Seleccionar el primero por defecto si existe
+          if (summaries.length > 0) {
+            setSelectedAnalyst(summaries[0].username);
+            const page = await fetchHistoryByAnalyst(
+              summaries[0].username,
+              0,
+              50
+            );
+            setAnalystPage(page);
+            // Sugerir rango del mes actual por defecto
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const fmt = (d: Date) =>
+              `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+                2,
+                "0"
+              )}-${String(d.getDate()).padStart(2, "0")}`;
+            setFromDate(fmt(start));
+            setToDate(fmt(end));
+          } else {
+            setAnalystPage({
+              content: [],
+              totalElements: 0,
+              totalPages: 0,
+              number: 0,
+              size: 50,
+            });
+          }
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [viewMode, userIsAdmin]);
+
+  const handlePageChange = (
+    _event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    loadAllHistory(page - 1);
+  };
+
+  const handleViewModeChange = (
+    _event: React.SyntheticEvent,
+    newValue: "mine" | "all" | "analysts"
+  ) => {
+    setViewMode(newValue);
+    setFilters({ riskLevel: "all" });
+  };
 
   // Función para el semáforo de riesgo
   const getRiskSemaphore = (probability: number) => {
@@ -129,30 +266,11 @@ const HistoryPanel: React.FC = () => {
     };
   };
 
-  const loadHistory = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchHistory();
-      setHistory(data);
-    } catch (error) {
-      console.error("Error cargando historial:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadKPIs = async () => {
-    try {
-      const data = await fetchKPIs();
-      setKpis(data);
-    } catch (error) {
-      console.error("Error cargando KPIs:", error);
-    }
-  };
-
   // Filtrar historial
   const filteredHistory = useMemo(() => {
-    return history.filter((item) => {
+    const dataSource = viewMode === "mine" ? history : allHistory;
+
+    return dataSource.filter((item) => {
       if (filters.riskLevel === "critical" && item.churnProbability <= 0.75)
         return false;
       if (
@@ -164,7 +282,7 @@ const HistoryPanel: React.FC = () => {
         return false;
       return true;
     });
-  }, [history, filters]);
+  }, [viewMode, history, allHistory, filters]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -238,6 +356,157 @@ const HistoryPanel: React.FC = () => {
     XLSX.writeFile(wb, fileName);
   };
 
+  // Exportar historial del analista seleccionado a Excel
+  const handleExportAnalystToExcel = () => {
+    if (!analystPage.content || analystPage.content.length === 0) return;
+
+    const exportData = analystPage.content.map((item) => {
+      const insight = getBusinessInsight(item);
+      const semaphore = getRiskSemaphore(item.churnProbability);
+
+      return {
+        "ID Cliente": item.customerId,
+        Productos: item.numOfProducts,
+        "Causal Técnica": insight.causalTecnica,
+        "Causal de Negocio": insight.causalNegocio,
+        "Acción Sugerida": insight.accionSugerida,
+        Prioridad: insight.prioridad.toUpperCase(),
+        "Impacto Estimado": insight.impactoEstimado,
+        "Probabilidad de Churn": `${(item.churnProbability * 100).toFixed(1)}%`,
+        "Nivel de Riesgo": semaphore.label,
+        "Fecha de Predicción": formatDate(item.predictionDate),
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    ws["!cols"] = [
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 35 },
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 12 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 20 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const sheetName = selectedAnalyst
+      ? `Historial_${selectedAnalyst}`
+      : "Historial_Analista";
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+    const today = new Date();
+    const fileName = `ChurnInsight_${sheetName}_${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  // Exportar historial del analista del rango completo (todas las páginas)
+  const [exportingRange, setExportingRange] = useState(false);
+  const handleExportAnalystRangeToExcel = async () => {
+    if (!selectedAnalyst || !fromDate || !toDate) return;
+    setExportingRange(true);
+    try {
+      const size = 200; // tamaño de página grande para acelerar
+      let page = 0;
+      const rows: PredictionHistory[] = [];
+      // Obtener la primera página para conocer totalPages
+      const first = await fetchHistoryByAnalystRange(
+        selectedAnalyst,
+        fromDate,
+        toDate,
+        page,
+        size
+      );
+      rows.push(...first.content);
+      const totalPages = first.totalPages;
+      for (let p = 1; p < totalPages; p++) {
+        const next = await fetchHistoryByAnalystRange(
+          selectedAnalyst,
+          fromDate,
+          toDate,
+          p,
+          size
+        );
+        rows.push(...next.content);
+      }
+
+      if (rows.length === 0) return;
+      const exportData = rows.map((item) => {
+        const insight = getBusinessInsight(item);
+        const semaphore = getRiskSemaphore(item.churnProbability);
+        return {
+          "ID Cliente": item.customerId,
+          Productos: item.numOfProducts,
+          "Causal Técnica": insight.causalTecnica,
+          "Causal de Negocio": insight.causalNegocio,
+          "Acción Sugerida": insight.accionSugerida,
+          Prioridad: insight.prioridad.toUpperCase(),
+          "Impacto Estimado": insight.impactoEstimado,
+          "Probabilidad de Churn": `${(item.churnProbability * 100).toFixed(
+            1
+          )}%`,
+          "Nivel de Riesgo": semaphore.label,
+          "Fecha de Predicción": formatDate(item.predictionDate),
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      ws["!cols"] = [
+        { wch: 20 },
+        { wch: 10 },
+        { wch: 35 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 20 },
+      ];
+      const wb = XLSX.utils.book_new();
+      const sheetName = `Historial_Rango_${selectedAnalyst}`;
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      const fileName = `ChurnInsight_${sheetName}_${fromDate}_a_${toDate}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } finally {
+      setExportingRange(false);
+    }
+  };
+
+  // Exportar resumen por periodo a Excel
+  const handleExportPeriodReportToExcel = () => {
+    if (!periodReport || periodReport.length === 0) return;
+    const exportData = periodReport.map((r) => ({
+      Año: r.year,
+      Mes: granularity === "monthly" ? r.month ?? "" : "",
+      "Total Análisis": r.totalAnalyses,
+      "Alto Riesgo": r.highRiskCount,
+      "Promedio (%)": (r.averageChurnProbability * 100).toFixed(1),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    ws["!cols"] = [
+      { wch: 8 },
+      { wch: 6 },
+      { wch: 16 },
+      { wch: 12 },
+      { wch: 14 },
+    ];
+    const wb = XLSX.utils.book_new();
+    const sheetName = selectedAnalyst
+      ? `Resumen_${granularity}_${selectedAnalyst}`
+      : `Resumen_${granularity}`;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    const today = new Date();
+    const fileName = `ChurnInsight_${sheetName}_${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
@@ -256,111 +525,149 @@ const HistoryPanel: React.FC = () => {
           Historial de Predicciones
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Últimas predicciones de riesgo de abandono bancario
+          Análisis de riesgo de abandono bancario
         </Typography>
       </Box>
 
-      {/* KPIs Dashboard */}
-      {!loading && history.length > 0 && (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(5, 1fr)",
-            },
-            gap: 3,
-            mb: 4,
-          }}
+      {/* Tabs para cambiar entre vistas */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+        <Tabs
+          value={viewMode}
+          onChange={handleViewModeChange}
+          aria-label="Vistas de historial"
         >
-          <Card elevation={2} sx={{ borderLeft: "4px solid #d32f2f" }}>
-            <CardContent>
-              <Typography color="text.secondary" variant="body2" gutterBottom>
-                Clientes en Riesgo Crítico
-              </Typography>
-              <Typography variant="h3" color="error.main" fontWeight={700}>
-                {kpis.totalHighRiskClients}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Probabilidad &gt; 75%
-              </Typography>
-            </CardContent>
-          </Card>
+          <Tab
+            label={`Mis Análisis (${history.length})`}
+            value="mine"
+            sx={{ fontWeight: viewMode === "mine" ? 700 : 400 }}
+          />
+          {/* Solo mostrar pestaña "Todos los Análisis" si el usuario es ADMIN */}
+          {isAdmin() && (
+            <Tab
+              label={`Todos los Análisis (${totalElements.toLocaleString()})`}
+              value="all"
+              sx={{ fontWeight: viewMode === "all" ? 700 : 400 }}
+            />
+          )}
+          {isAdmin() && (
+            <Tab
+              label={`Por Analista${
+                analystSummaries.length > 0
+                  ? ` (${analystSummaries.length})`
+                  : ""
+              }`}
+              value="analysts"
+              sx={{ fontWeight: viewMode === "analysts" ? 700 : 400 }}
+            />
+          )}
+        </Tabs>
+      </Box>
 
-          <Card elevation={2} sx={{ borderLeft: "4px solid #ed6c02" }}>
-            <CardContent>
-              <Typography color="text.secondary" variant="body2" gutterBottom>
-                Capital en Riesgo
-              </Typography>
-              <Typography variant="h3" color="warning.main" fontWeight={700}>
-                {kpis.capitalAtRisk >= 1000000
-                  ? `$${(kpis.capitalAtRisk / 1000000).toLocaleString("es-ES", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 6,
-                    })}M`
-                  : `$${kpis.capitalAtRisk.toLocaleString("es-ES", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Suma de balances en riesgo
-              </Typography>
-            </CardContent>
-          </Card>
+      {/* KPIs Dashboard */}
+      {!loading &&
+        (viewMode === "mine" ? history.length > 0 : allHistory.length > 0) && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(5, 1fr)",
+              },
+              gap: 3,
+              mb: 4,
+            }}
+          >
+            <Card elevation={2} sx={{ borderLeft: "4px solid #d32f2f" }}>
+              <CardContent>
+                <Typography color="text.secondary" variant="body2" gutterBottom>
+                  Clientes en Riesgo Crítico
+                </Typography>
+                <Typography variant="h3" color="error.main" fontWeight={700}>
+                  {kpis.totalHighRiskClients}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Probabilidad &gt; 75%
+                </Typography>
+              </CardContent>
+            </Card>
 
-          <Card elevation={2} sx={{ borderLeft: "4px solid #2e7d32" }}>
-            <CardContent>
-              <Typography color="text.secondary" variant="body2" gutterBottom>
-                Precisión del Modelo
-              </Typography>
-              <Typography variant="h3" color="success.main" fontWeight={700}>
-                {(kpis.accuracyLastMonth * 100).toFixed(1)}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Mes anterior
-              </Typography>
-            </CardContent>
-          </Card>
+            <Card elevation={2} sx={{ borderLeft: "4px solid #ed6c02" }}>
+              <CardContent>
+                <Typography color="text.secondary" variant="body2" gutterBottom>
+                  Capital en Riesgo
+                </Typography>
+                <Typography variant="h3" color="warning.main" fontWeight={700}>
+                  {kpis.capitalAtRisk >= 1000000
+                    ? `$${(kpis.capitalAtRisk / 1000000).toLocaleString(
+                        "es-ES",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 6,
+                        }
+                      )}M`
+                    : `$${kpis.capitalAtRisk.toLocaleString("es-ES", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Suma de balances en riesgo
+                </Typography>
+              </CardContent>
+            </Card>
 
-          <Card elevation={2} sx={{ borderLeft: "4px solid #1976d2" }}>
-            <CardContent>
-              <Typography color="text.secondary" variant="body2" gutterBottom>
-                Riesgo Promedio
-              </Typography>
-              <Typography
-                variant="h3"
-                sx={{ color: "#1976d2" }}
-                fontWeight={700}
-              >
-                {kpis.averageRisk.toFixed(1)}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                De todos los clientes
-              </Typography>
-            </CardContent>
-          </Card>
+            <Card elevation={2} sx={{ borderLeft: "4px solid #2e7d32" }}>
+              <CardContent>
+                <Typography color="text.secondary" variant="body2" gutterBottom>
+                  Precisión del Modelo
+                </Typography>
+                <Typography variant="h3" color="success.main" fontWeight={700}>
+                  {(kpis.accuracyLastMonth * 100).toFixed(1)}%
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Mes anterior
+                </Typography>
+              </CardContent>
+            </Card>
 
-          <Card elevation={2} sx={{ borderLeft: "4px solid #1e3c72" }}>
-            <CardContent>
-              <Typography color="text.secondary" variant="body2" gutterBottom>
-                Total Predicciones
-              </Typography>
-              <Typography
-                variant="h3"
-                sx={{ color: "#1e3c72" }}
-                fontWeight={700}
-              >
-                {kpis.totalPredictions}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Análisis realizados
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-      )}
+            <Card elevation={2} sx={{ borderLeft: "4px solid #1976d2" }}>
+              <CardContent>
+                <Typography color="text.secondary" variant="body2" gutterBottom>
+                  Riesgo Promedio
+                </Typography>
+                <Typography
+                  variant="h3"
+                  sx={{ color: "#1976d2" }}
+                  fontWeight={700}
+                >
+                  {kpis.averageRisk.toFixed(1)}%
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  De todos los clientes
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card elevation={2} sx={{ borderLeft: "4px solid #1e3c72" }}>
+              <CardContent>
+                <Typography color="text.secondary" variant="body2" gutterBottom>
+                  Total Predicciones
+                </Typography>
+                <Typography
+                  variant="h3"
+                  sx={{ color: "#1e3c72" }}
+                  fontWeight={700}
+                >
+                  {kpis.totalPredictions}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Análisis realizados
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
       {/* Filtros */}
       {!loading && history.length > 0 && (
@@ -403,7 +710,329 @@ const HistoryPanel: React.FC = () => {
         </Box>
       )}
 
-      {loading ? (
+      {viewMode === "analysts" && userIsAdmin ? (
+        <Box>
+          {/* Selector de analista */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              mb: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <TextField
+              label="Buscar (nombre, usuario, correo)"
+              variant="outlined"
+              value={analystSearch}
+              onChange={(e) => setAnalystSearch(e.target.value)}
+              fullWidth
+              sx={{ minWidth: { sm: 280 }, flex: "1 1 280px" }}
+            />
+            <FormControl sx={{ minWidth: 240 }}>
+              <InputLabel>Analista</InputLabel>
+              <Select
+                value={selectedAnalyst}
+                label="Analista"
+                onChange={async (e) => {
+                  const u = e.target.value as string;
+                  setSelectedAnalyst(u);
+                  setLoading(true);
+                  try {
+                    const page = await fetchHistoryByAnalyst(u, 0, 50);
+                    setAnalystPage(page);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {filteredAnalysts.map((a) => (
+                  <MenuItem key={a.username} value={a.username}>
+                    {a.fullName ? `${a.fullName} (${a.username})` : a.username}
+                    {a.email ? ` · ${a.email}` : ""}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Rango de fechas */}
+            <TextField
+              label="Desde"
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              sx={{ minWidth: { sm: 180 }, flex: "1 1 160px" }}
+            />
+            <TextField
+              label="Hasta"
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              sx={{ minWidth: { sm: 180 }, flex: "1 1 160px" }}
+            />
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                if (!selectedAnalyst || !fromDate || !toDate) return;
+                setLoading(true);
+                try {
+                  const page = await fetchHistoryByAnalystRange(
+                    selectedAnalyst,
+                    fromDate,
+                    toDate,
+                    0,
+                    50
+                  );
+                  setAnalystPage(page);
+                  const summary = await fetchAnalystPeriodReport(
+                    selectedAnalyst,
+                    fromDate,
+                    toDate,
+                    granularity
+                  );
+                  setPeriodReport(summary);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Aplicar
+            </Button>
+
+            {/* KPIs compactos por analista */}
+            {selectedAnalyst && (
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                {analystSummaries
+                  .filter((a) => a.username === selectedAnalyst)
+                  .map((a) => (
+                    <Card key={a.username} elevation={2}>
+                      <CardContent>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          {a.fullName || a.username}
+                        </Typography>
+                        {a.email && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block", mb: 1 }}
+                          >
+                            {a.email}
+                          </Typography>
+                        )}
+                        <Typography variant="body2">
+                          Total análisis: <b>{a.totalAnalyses}</b>
+                        </Typography>
+                        <Typography variant="body2">
+                          Último:{" "}
+                          <b>
+                            {new Date(a.lastPredictionDate).toLocaleString(
+                              "es-ES"
+                            )}
+                          </b>
+                        </Typography>
+                        <Typography variant="body2">
+                          Riesgo medio:{" "}
+                          <b>{(a.averageChurnProbability * 100).toFixed(1)}%</b>
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </Box>
+            )}
+          </Box>
+
+          {/* Acciones */}
+          {selectedAnalyst && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
+                mb: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <FormControl sx={{ minWidth: 180 }}>
+                <InputLabel>Granularidad</InputLabel>
+                <Select
+                  value={granularity}
+                  label="Granularidad"
+                  onChange={(e) => setGranularity(e.target.value as any)}
+                >
+                  <MenuItem value="monthly">Mensual</MenuItem>
+                  <MenuItem value="yearly">Anual</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownload />}
+                  onClick={handleExportPeriodReportToExcel}
+                  disabled={periodReport.length === 0}
+                >
+                  Exportar Resumen
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownload />}
+                  onClick={handleExportAnalystRangeToExcel}
+                  disabled={
+                    exportingRange || !selectedAnalyst || !fromDate || !toDate
+                  }
+                >
+                  Exportar Rango Completo
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<FileDownload />}
+                  onClick={handleExportAnalystToExcel}
+                  disabled={analystPage.content.length === 0}
+                  sx={{ bgcolor: "#1e3c72", "&:hover": { bgcolor: "#2a5298" } }}
+                >
+                  Exportar Excel
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          {/* Resumen por periodo (mensual/anual) */}
+          {periodReport.length > 0 && (
+            <TableContainer
+              component={Paper}
+              elevation={3}
+              sx={{ mt: 2, overflowX: "auto" }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "#1e3c72" }}>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Año
+                    </TableCell>
+                    {granularity === "monthly" && (
+                      <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                        Mes
+                      </TableCell>
+                    )}
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Total Análisis
+                    </TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Alto Riesgo
+                    </TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Promedio (%)
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {periodReport.map((r, idx) => (
+                    <TableRow
+                      key={`${r.year}-${r.month ?? "y"}-${idx}`}
+                      sx={{ "&:nth-of-type(odd)": { bgcolor: "#f8f9fa" } }}
+                    >
+                      <TableCell>{r.year}</TableCell>
+                      {granularity === "monthly" && (
+                        <TableCell>{r.month}</TableCell>
+                      )}
+                      <TableCell>{r.totalAnalyses}</TableCell>
+                      <TableCell>{r.highRiskCount}</TableCell>
+                      <TableCell>
+                        {(r.averageChurnProbability * 100).toFixed(1)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {/* Tabla de historial por analista */}
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CircularProgress size={60} />
+            </Box>
+          ) : analystPage.content.length === 0 ? (
+            <Paper elevation={2} sx={{ p: 4, textAlign: "center" }}>
+              <Typography>No hay predicciones para este analista.</Typography>
+            </Paper>
+          ) : (
+            <TableContainer
+              component={Paper}
+              elevation={3}
+              sx={{ overflowX: "auto" }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "#1e3c72" }}>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      ID Cliente
+                    </TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Productos
+                    </TableCell>
+                    <TableCell
+                      sx={{ color: "white", fontWeight: 700 }}
+                      align="center"
+                    >
+                      Riesgo
+                    </TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: 700 }}>
+                      Fecha
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {analystPage.content.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      sx={{ "&:nth-of-type(odd)": { bgcolor: "#f8f9fa" } }}
+                    >
+                      <TableCell>{item.customerId}</TableCell>
+                      <TableCell>{item.numOfProducts}</TableCell>
+                      <TableCell align="center">
+                        {(item.churnProbability * 100).toFixed(1)}%
+                      </TableCell>
+                      <TableCell>
+                        {new Date(item.predictionDate).toLocaleString("es-ES")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {/* Paginación analista */}
+          {analystPage.totalPages > 1 && (
+            <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+              <Pagination
+                count={analystPage.totalPages}
+                page={analystPage.number + 1}
+                onChange={async (_e, p) => {
+                  setLoading(true);
+                  try {
+                    const page = await fetchHistoryByAnalyst(
+                      selectedAnalyst,
+                      p - 1,
+                      analystPage.size
+                    );
+                    setAnalystPage(page);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                color="primary"
+              />
+            </Box>
+          )}
+        </Box>
+      ) : loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
           <CircularProgress size={60} />
         </Box>
@@ -586,11 +1215,28 @@ const HistoryPanel: React.FC = () => {
         </TableContainer>
       )}
 
+      {/* Paginación para vista "Todos los Análisis" */}
+      {viewMode === "all" && totalPages > 1 && (
+        <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage + 1}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
       {filteredHistory.length > 0 && (
         <Box sx={{ mt: 2, textAlign: "center" }}>
           <Typography variant="caption" color="text.secondary">
             Mostrando {filteredHistory.length}{" "}
-            {filteredHistory.length !== history.length
+            {viewMode === "all" && totalElements > 0
+              ? `de ${totalElements.toLocaleString()}`
+              : viewMode === "mine" && filteredHistory.length !== history.length
               ? `de ${history.length}`
               : ""}{" "}
             predicciones

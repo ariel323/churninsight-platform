@@ -1,17 +1,20 @@
 package com.churninsight.controller;
 
+import com.churninsight.model.User;
 import com.churninsight.security.JwtService;
 import com.churninsight.service.UserService;
-import com.churninsight.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,6 +36,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
+            System.out.println("[AUTH] Intento de login - Usuario: " + loginRequest.getUsername());
+            
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     loginRequest.getUsername(),
@@ -43,14 +48,36 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtService.generateToken(userDetails);
             
+            // Obtener roles del usuario
+            List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(auth -> auth.replace("ROLE_", ""))
+                .collect(Collectors.toList());
+            
+            // Obtener usuario completo para información adicional
+            User user = userService.getUserByUsername(userDetails.getUsername());
+            String primaryRole = user.getPrimaryRole();
+            
+            System.out.println("[AUTH] Login exitoso - Usuario: " + userDetails.getUsername());
+            System.out.println("[AUTH]   - Roles: " + roles);
+            System.out.println("[AUTH]   - Rol principal: " + primaryRole);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("username", userDetails.getUsername());
-            response.put("authorities", userDetails.getAuthorities());
+            response.put("email", user.getEmail());
+            response.put("fullName", user.getFullName());
+            response.put("roles", roles);
+            response.put("primaryRole", primaryRole);
+            response.put("isAdmin", user.isAdmin());
             response.put("message", "Autenticación exitosa");
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.err.println("[AUTH] Error de autenticación - Usuario: " + loginRequest.getUsername());
+            System.err.println("[AUTH] Error detalle: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
+            
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Credenciales inválidas");
             errorResponse.put("message", "Usuario o contraseña incorrectos");

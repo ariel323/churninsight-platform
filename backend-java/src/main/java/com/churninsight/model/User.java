@@ -2,6 +2,8 @@ package com.churninsight.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -23,8 +25,13 @@ public class User {
     @Column(nullable = false)
     private String fullName;
     
-    @Column(nullable = false)
-    private String role = "ANALISTA";
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
     
     @Column
     private String resetToken;
@@ -41,12 +48,11 @@ public class User {
     // Constructores
     public User() {}
     
-    public User(String username, String password, String email, String fullName, String role) {
+    public User(String username, String password, String email, String fullName) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.fullName = fullName;
-        this.role = role;
         this.createdAt = LocalDateTime.now();
         this.active = true;
     }
@@ -92,14 +98,6 @@ public class User {
         this.fullName = fullName;
     }
     
-    public String getRole() {
-        return role;
-    }
-    
-    public void setRole(String role) {
-        this.role = role;
-    }
-    
     public String getResetToken() {
         return resetToken;
     }
@@ -130,5 +128,56 @@ public class User {
     
     public void setActive(boolean active) {
         this.active = active;
+    }
+    
+    public Set<Role> getRoles() {
+        return roles;
+    }
+    
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+    
+    public void addRole(Role role) {
+        this.roles.add(role);
+        role.getUsers().add(this);
+    }
+    
+    public void removeRole(Role role) {
+        this.roles.remove(role);
+        role.getUsers().remove(this);
+    }
+    
+    public boolean hasRole(String roleName) {
+        return this.roles.stream()
+            .anyMatch(role -> role.getName().equals(roleName));
+    }
+    
+    /**
+     * Verifica si el usuario tiene rol ADMIN
+     */
+    public boolean isAdmin() {
+        return hasRole("ADMIN");
+    }
+    
+    /**
+     * Verifica si el usuario tiene rol ANALISTA
+     */
+    public boolean isAnalista() {
+        return hasRole("ANALISTA");
+    }
+    
+    /**
+     * Obtiene el rol principal (el de mayor jerarquía)
+     * ADMIN > ANALISTA
+     */
+    public String getPrimaryRole() {
+        if (hasRole("ADMIN")) {
+            return "ADMIN";
+        }
+        if (hasRole("ANALISTA")) {
+            return "ANALISTA";
+        }
+        return "USER";
     }
 }

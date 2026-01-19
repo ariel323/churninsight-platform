@@ -10,21 +10,20 @@ import {
   InputLabel,
   Select,
   Divider,
-  Grid,
 } from "@mui/material";
 import { Person, Info } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 
+import { ChurnPredictionRequest } from "./types";
+
 // Interfaz interna para el formulario (datos que ingresa el usuario)
-interface ClientFormData {
-  age: number;
-  numOfProducts: number;
-  isActiveMember: number;
-  country: string;
-  balance: number;
-  estimatedSalary: number;
-  tenure: number;
-  creditScore: number;
+interface ClientFormData extends Omit<
+  ChurnPredictionRequest,
+  "recentInactive" | "productUsageDrop" | "hadComplaint"
+> {
+  recentInactive: number;
+  productUsageDrop: number;
+  hadComplaint: number;
 }
 
 // Tipos alineados con el modelo de backend/data-science
@@ -52,6 +51,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
   } = useForm<ClientFormData>({
     defaultValues: {
       age: 30,
+      gender: "Male",
       numOfProducts: 1,
       isActiveMember: 1,
       country: "France",
@@ -59,35 +59,37 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
       estimatedSalary: 0,
       tenure: 0,
       creditScore: 350,
+      deltaBalance: 0,
+      deltaNumOfProducts: 0,
+      recentInactive: 0,
+      productUsageDrop: 0,
+      hadComplaint: 0,
     },
   });
 
   const onFormSubmit = useCallback(
     (data: ClientFormData) => {
-      // Transformar los datos del usuario a los parámetros del modelo
-      const ageRisk = data.age >= 40 && data.age <= 70 ? 1 : 0;
-      const inactivo4070 =
-        data.age >= 40 && data.age <= 70 && data.isActiveMember === 0 ? 1 : 0;
-      const productsRiskFlag = data.numOfProducts >= 3 ? 1 : 0;
-      const countryRiskFlag = data.country === "Germany" ? 1 : 0;
-
-      const modelData = {
-        ageRisk,
-        numOfProducts: data.numOfProducts,
-        inactivo4070,
-        productsRiskFlag,
-        countryRiskFlag,
+      // Enviar datos crudos al backend (el backend computará las características derivadas)
+      const modelData: ChurnPredictionRequest = {
+        age: data.age,
+        gender: data.gender,
         balance: data.balance,
+        numOfProducts: data.numOfProducts,
+        country: data.country,
+        isActiveMember: data.isActiveMember,
         estimatedSalary: data.estimatedSalary,
         tenure: data.tenure,
         creditScore: data.creditScore,
-        country: data.country,
-        isActiveMember: data.isActiveMember === 1, // Convertir 1/0 a true/false
+        deltaBalance: data.deltaBalance,
+        deltaNumOfProducts: data.deltaNumOfProducts,
+        recentInactive: data.recentInactive === 1,
+        productUsageDrop: data.productUsageDrop === 1,
+        hadComplaint: data.hadComplaint === 1,
       };
 
       onSubmit(modelData);
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   return (
@@ -157,9 +159,18 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
 
         <Divider sx={{ mb: { xs: 2, sm: 3 } }} />
 
-        <Grid container spacing={{ xs: 2.5, sm: 3 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "1fr 1fr",
+            },
+            gap: { xs: 2.5, sm: 3 },
+          }}
+        >
           {/* Edad */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="age"
               control={control}
@@ -185,9 +196,31 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
+          {/* Género */}
+          <Box>
+            <Controller
+              name="gender"
+              control={control}
+              rules={{ required: "El género es obligatorio" }}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.gender}>
+                  <InputLabel>Género</InputLabel>
+                  <Select {...field} label="Género">
+                    <MenuItem value="Male">Masculino</MenuItem>
+                    <MenuItem value="Female">Femenino</MenuItem>
+                  </Select>
+                  {errors.gender && (
+                    <Typography variant="caption" color="error">
+                      {errors.gender.message}
+                    </Typography>
+                  )}
+                </FormControl>
+              )}
+            />
+          </Box>
           {/* Número de productos */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="numOfProducts"
               control={control}
@@ -214,9 +247,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Estado de la cuenta */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="isActiveMember"
               control={control}
@@ -246,9 +279,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 </FormControl>
               )}
             />
-          </Grid>
+          </Box>
           {/* País */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="country"
               control={control}
@@ -279,9 +312,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 </FormControl>
               )}
             />
-          </Grid>
+          </Box>
           {/* Balance */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="balance"
               control={control}
@@ -304,9 +337,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Estimated Salary */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="estimatedSalary"
               control={control}
@@ -329,9 +362,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Tenure */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="tenure"
               control={control}
@@ -353,9 +386,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Credit Score */}
-          <Grid item xs={12} sm={6}>
+          <Box>
             <Controller
               name="creditScore"
               control={control}
@@ -380,8 +413,109 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </Box>
+          {/* Variación de balance */}
+          <Box>
+            <Controller
+              name="deltaBalance"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Cambio reciente en balance (%)"
+                  placeholder="Ej: -15 (bajó 15%)"
+                  helperText="Porcentaje de cambio en el saldo respecto al mes anterior"
+                />
+              )}
+            />
+          </Box>
+          {/* Variación de productos */}
+          <Box>
+            <Controller
+              name="deltaNumOfProducts"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  fullWidth
+                  label="Cambio en productos contratados"
+                  placeholder="Ej: -1 (canceló 1 producto)"
+                  helperText="Número de productos ganados o perdidos recientemente"
+                />
+              )}
+            />
+          </Box>
+          {/* ¿Pasó de activo a inactivo? */}
+          <Box>
+            <Controller
+              name="recentInactive"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  <InputLabel>¿Pasó de activo a inactivo?</InputLabel>
+                  <Select {...field} label="¿Pasó de activo a inactivo?">
+                    <MenuItem value={0}>No</MenuItem>
+                    <MenuItem value={1}>Sí</MenuItem>
+                  </Select>
+                  <Typography
+                    variant="caption"
+                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
+                  >
+                    Indica si el cliente dejó de usar la cuenta recientemente
+                  </Typography>
+                </FormControl>
+              )}
+            />
+          </Box>
+          {/* ¿Dejó de usar algún producto? */}
+          <Box>
+            <Controller
+              name="productUsageDrop"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  <InputLabel>¿Dejó de usar algún producto?</InputLabel>
+                  <Select {...field} label="¿Dejó de usar algún producto?">
+                    <MenuItem value={0}>No</MenuItem>
+                    <MenuItem value={1}>Sí</MenuItem>
+                  </Select>
+                  <Typography
+                    variant="caption"
+                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
+                  >
+                    Indica si el cliente dejó de usar algún producto bancario
+                  </Typography>
+                </FormControl>
+              )}
+            />
+          </Box>
+          {/* ¿Tuvo quejas recientes? */}
+          <Box>
+            <Controller
+              name="hadComplaint"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  <InputLabel>¿Tuvo quejas recientes?</InputLabel>
+                  <Select {...field} label="¿Tuvo quejas recientes?">
+                    <MenuItem value={0}>No</MenuItem>
+                    <MenuItem value={1}>Sí</MenuItem>
+                  </Select>
+                  <Typography
+                    variant="caption"
+                    sx={{ mt: 0.5, ml: 1.5, color: "#666" }}
+                  >
+                    Indica si el cliente presentó quejas o reclamos
+                    recientemente
+                  </Typography>
+                </FormControl>
+              )}
+            />
+          </Box>
+        </Box>
       </Paper>
 
       {/* Botón de envío */}

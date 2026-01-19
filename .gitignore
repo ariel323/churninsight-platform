@@ -23,20 +23,12 @@ Thumbs.db
 # Local env
 .env
 
-# Scripts de configuración local
-*.bat
-*.sh
-*.ps1
-test_integration.ps1
-setup.bat
-setup.sh
-
 # Archivos de respaldo
 *.backup
 *.corrupted
 *.bak
 
-# Node modules
+# Node modules y dependencias
 node_modules/
 package-lock.json
 
@@ -45,12 +37,34 @@ package-lock.json
 logs/
 *.tmp
 
-# Backend: Excluir archivos de conexión Java con modelo ML
-backend-java/src/main/java/com/churninsight/service/ChurnPredictionService.java
-backend-java/src/main/java/com/churninsight/controller/ChurnController.java
-backend-java/src/main/java/com/churninsight/controller/StatsController.java
-backend-java/src/main/java/com/churninsight/dto/ChurnPredictionResponse.java
-backend-java/src/main/java/com/churninsight/model/ChurnInput.java
-backend-java/src/main/java/com/churninsight/model/ChurnInputRepository.java
-backend-java/src/main/java/com/churninsight/model/ChurnPrediction.java
-backend-java/src/main/java/com/churninsight/model/ChurnPredictionRepository.java
+# Entornos virtuales Python (CRÍTICO: no subir a Git)
+venv/
+.venv/
+venv312/
+env/
+ENV/
+env.bak/
+venv.bak/
+**/venv/
+**/.venv/
+**/venv312/
+**/env/
+
+# Archivos build del frontend
+frontend/build/
+
+# Archivos de datos grandes (CSV de resultados, no los de entrenamiento)
+data-science/resultados_finales_*.csv
+data-science/informe_clientes_*.csv
+data-science/analisis_por_edad_*.csv
+data-science/resumen_ejecutivo_*.csv
+data-science/clientes_masivos.csv
+
+# Archivos de salida SQL y backups
+backend-java/mysql_out.txt
+backend-java/src/main/resources/db/backup/
+**/db/backup/
+
+# JAR ejecutable (solo en desarrollo local, no el .jar.original)
+backend-java/target/*.jar
+!backend-java/target/*.jar.original
