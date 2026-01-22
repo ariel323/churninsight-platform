@@ -4,9 +4,9 @@ import { AccountBalanceWallet } from "@mui/icons-material";
 
 interface HeaderProps {
   stats?: {
-    activeUsers: number;
-    retentionRate: number;
-    todayPredictions: number;
+    activeUsers: number | null;
+    retentionRate: number | null;
+    todayPredictions: number | null;
   };
 }
 
@@ -67,7 +67,9 @@ const Header: React.FC<HeaderProps> = ({ stats }) => {
               variant="body2"
               sx={{ fontWeight: 700, fontSize: "0.9rem" }}
             >
-              {stats.activeUsers.toLocaleString()}
+              {stats.activeUsers !== null
+                ? stats.activeUsers.toLocaleString()
+                : "--"}
             </Typography>
           </Box>
           <Box sx={{ textAlign: "center" }}>
@@ -81,7 +83,9 @@ const Header: React.FC<HeaderProps> = ({ stats }) => {
               variant="body2"
               sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#22c55e" }}
             >
-              {stats.retentionRate.toFixed(1)}%
+              {stats.retentionRate !== null
+                ? `${stats.retentionRate.toFixed(1)}%`
+                : "--"}
             </Typography>
           </Box>
           <Box sx={{ textAlign: "center" }}>
@@ -95,7 +99,9 @@ const Header: React.FC<HeaderProps> = ({ stats }) => {
               variant="body2"
               sx={{ fontWeight: 700, fontSize: "0.9rem" }}
             >
-              {stats.todayPredictions.toLocaleString()}
+              {stats.todayPredictions !== null
+                ? stats.todayPredictions.toLocaleString()
+                : "--"}
             </Typography>
           </Box>
         </Box>

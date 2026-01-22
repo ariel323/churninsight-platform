@@ -10,6 +10,7 @@ import java.util.List;
 public interface PredictionHistoryRepository extends JpaRepository<PredictionHistory, Long> {
     List<PredictionHistory> findByUsernameOrderByPredictionDateDesc(String username);
     List<PredictionHistory> findTop10ByOrderByPredictionDateDesc();
+    List<PredictionHistory> findTop50ByUsernameOrderByPredictionDateDesc(String username);
     long countByUsername(String username);
     long countByUsernameAndPredictionDateBetween(String username, LocalDateTime start, LocalDateTime end);
     long countByUsernameAndChurnProbabilityLessThan(String username, double threshold);

@@ -59,16 +59,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      console.log("[LOGIN] Iniciando login para usuario:", username);
+      console.log("[LOGIN] API URL:", `${API_BASE_URL}/auth/login`);
+
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ username, password }),
+        credentials: "include",
       });
+
+      console.log("[LOGIN] Respuesta recibida. Status:", response.status);
 
       if (!response.ok) {
         const raw = await response.text();
+        console.error("[LOGIN] Error response:", raw);
         let message = "Error de autenticación";
         try {
           const parsed = raw ? JSON.parse(raw) : null;
@@ -80,13 +88,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }
 
       const data = await response.json();
+      console.log(
+        "[LOGIN] Login exitoso. Token recibido (primeros 30 chars):",
+        data.token?.substring(0, 30) + "...",
+      );
+
+      // Limpiar localStorage antes de guardar nuevo token
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
 
       // Guardar token en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
 
+      console.log("[LOGIN] Token guardado en localStorage");
+
       onLoginSuccess(data.token, data.username);
     } catch (err) {
+      console.error("[LOGIN] Error en login:", err);
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
     } finally {
       setLoading(false);
@@ -134,7 +153,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }
 
       setSuccess(
-        "✓ Usuario registrado exitosamente. Ya puedes iniciar sesión."
+        "✓ Usuario registrado exitosamente. Ya puedes iniciar sesión.",
       );
 
       // Limpiar campos y cambiar a login después de 2 segundos
@@ -148,7 +167,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }, 2000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al registrar usuario"
+        err instanceof Error ? err.message : "Error al registrar usuario",
       );
     } finally {
       setLoading(false);
@@ -187,7 +206,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setShowResetForm(true);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al solicitar recuperación"
+        err instanceof Error ? err.message : "Error al solicitar recuperación",
       );
     } finally {
       setLoading(false);
@@ -231,7 +250,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }, 2000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al restablecer contraseña"
+        err instanceof Error ? err.message : "Error al restablecer contraseña",
       );
     } finally {
       setLoading(false);

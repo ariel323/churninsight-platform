@@ -10,8 +10,8 @@ import {
   InputLabel,
   Select,
   Divider,
-  Grid,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { Person, Info } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 
@@ -87,7 +87,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
 
       onSubmit(modelData);
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   return (
@@ -159,7 +159,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
 
         <Grid container spacing={{ xs: 2.5, sm: 3 }}>
           {/* Edad */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="age"
               control={control}
@@ -185,9 +187,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Número de productos */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="numOfProducts"
               control={control}
@@ -214,9 +218,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Estado de la cuenta */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="isActiveMember"
               control={control}
@@ -246,9 +252,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 </FormControl>
               )}
             />
-          </Grid>
+          </Box>
           {/* País */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="country"
               control={control}
@@ -279,9 +287,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 </FormControl>
               )}
             />
-          </Grid>
+          </Box>
           {/* Balance */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="balance"
               control={control}
@@ -304,9 +314,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Estimated Salary */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="estimatedSalary"
               control={control}
@@ -329,9 +341,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Tenure */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="tenure"
               control={control}
@@ -353,9 +367,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
           {/* Credit Score */}
-          <Grid item xs={12} sm={6}>
+          <Box
+            sx={{ width: { xs: "100%", sm: "50%" }, px: { xs: 0, sm: 1.5 } }}
+          >
             <Controller
               name="creditScore"
               control={control}
@@ -380,7 +396,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                 />
               )}
             />
-          </Grid>
+          </Box>
         </Grid>
       </Paper>
 

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import pickle
+import pandas as pd  # <-- AÑADIR IMPORT
 
 # Rutas y modelo
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "modelo_Banco_churn.pkl")
@@ -58,13 +59,23 @@ def favicon():
 def predict(req: PredictRequest):
     if model is None:
         raise HTTPException(status_code=500, detail="Modelo no cargado. Revisa logs del servidor Python.")
+    
+    # Validar que se reciban exactamente 5 features
+    if len(req.features) != 5:
+        raise HTTPException(status_code=400, detail=f"Se esperan 5 features, se recibieron {len(req.features)}")
+    
     try:
-        arr = [req.features]
+        # Convertir la lista a DataFrame con los nombres de columna correctos
+        columnas = ["Age_Risk", "NumOfProducts", "Inactivo_40_70", "Products_Risk_Flag", "Country_Risk_Flag"]
+        df = pd.DataFrame([req.features], columns=columnas)
+        
+        # Realizar la predicción
         if hasattr(model, "predict_proba"):
-            prob = float(model.predict_proba(arr)[0][1])
+            prob = float(model.predict_proba(df)[0][1])
         else:
-            prob = float(model.predict(arr)[0])
-        pred = int(model.predict(arr)[0])
+            prob = float(model.predict(df)[0])
+        pred = int(model.predict(df)[0])
+        
         return PredictResponse(prediction=pred, probability=prob)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
