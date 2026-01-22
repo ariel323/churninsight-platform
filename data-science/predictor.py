@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "churn_prediction_model.pkl")
+MODEL_PATH = os.path.join(os.path.dirname(__file__),  "churn_prediction_model.pkl")
 
 class PredictRequest(BaseModel):
     features: list[float]

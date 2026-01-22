@@ -62,15 +62,15 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [prediction, setPrediction] = useState<ChurnPredictionResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [stats, setStats] = useState<{
-    activeUsers: number;
-    retentionRate: number;
-    todayPredictions: number;
+    activeUsers: number | null;
+    retentionRate: number | null;
+    todayPredictions: number | null;
   } | null>(null);
 
   // Verificar si hay sesión activa al cargar
@@ -78,9 +78,33 @@ function App() {
     const token = localStorage.getItem("token");
     const savedUsername = localStorage.getItem("username");
 
+    console.log("[APP] Verificando sesión al cargar...");
+    console.log("[APP] Token presente:", Boolean(token));
+    console.log("[APP] Username presente:", Boolean(savedUsername));
+
     if (token && savedUsername) {
-      setIsAuthenticated(true);
-      setUsername(savedUsername);
+      // Validar que el token no esté expirado
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const expiry = payload.exp * 1000;
+        const now = Date.now();
+
+        if (expiry > now) {
+          console.log("[APP] Token válido, restaurando sesión");
+          setIsAuthenticated(true);
+          setUsername(savedUsername);
+        } else {
+          console.warn("[APP] Token expirado, limpiando sesión");
+          localStorage.removeItem("token");
+          localStorage.removeItem("username");
+        }
+      } catch (e) {
+        console.error("[APP] Error validando token:", e);
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+      }
+    } else {
+      console.log("[APP] No hay sesión guardada");
     }
   }, []);
 
@@ -93,7 +117,11 @@ function App() {
         setStats(statsData);
       } catch (err) {
         console.error("Error cargando estadísticas:", err);
-        setStats({ activeUsers: 0, retentionRate: 0, todayPredictions: 0 });
+        setStats({
+          activeUsers: null,
+          retentionRate: null,
+          todayPredictions: null,
+        });
       }
     };
     loadStats();
@@ -140,14 +168,14 @@ function App() {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   const handleTabChange = useCallback(
     (event: React.SyntheticEvent, newValue: number) => {
       setTabValue(newValue);
     },
-    []
+    [],
   );
 
   // Si no está autenticado, mostrar pantalla de login

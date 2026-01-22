@@ -31,11 +31,20 @@ public class JwtService {
     public String extractUsername(String token) {
         try {
             String username = extractClaim(token, Claims::getSubject);
-            logger.debug("[JWT] Username extraído: {}", username);
+            logger.debug("[JWT] Username extraído exitosamente: {}", username);
             return username;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            logger.warn("[JWT] Token expirado: {}", e.getMessage());
+            throw new RuntimeException("Token expirado", e);
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            logger.error("[JWT] Token malformado: {}", e.getMessage());
+            throw new RuntimeException("Token inválido", e);
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            logger.error("[JWT] Firma del token inválida: {}", e.getMessage());
+            throw new RuntimeException("Token con firma inválida", e);
         } catch (Exception e) {
-            logger.error("[JWT] Error extrayendo username: {}", e.getMessage());
-            throw e;
+            logger.error("[JWT] Error inesperado extrayendo username: {}", e.getMessage(), e);
+            throw new RuntimeException("Error procesando token", e);
         }
     }
     
@@ -49,25 +58,50 @@ public class JwtService {
     }
     
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        String token = Jwts.builder()
-            .claims(extraClaims)
-            .subject(userDetails.getUsername())
-            .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
-            .signWith(getSignInKey())
-            .compact();
-        logger.info("[JWT] Token generado para usuario: {}", userDetails.getUsername());
-        return token;
+        try {
+            Date now = new Date(System.currentTimeMillis());
+            Date expiry = new Date(System.currentTimeMillis() + JWT_EXPIRATION);
+            
+            String token = Jwts.builder()
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(getSignInKey())
+                .compact();
+            
+            logger.info("[JWT] Token generado exitosamente para usuario: {} (expira: {})", 
+                userDetails.getUsername(), expiry);
+            return token;
+        } catch (Exception e) {
+            logger.error("[JWT] Error generando token para {}: {}", userDetails.getUsername(), e.getMessage());
+            throw new RuntimeException("Error generando token", e);
+        }
     }
     
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
             final String username = extractUsername(token);
-            boolean valid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-            logger.debug("[JWT] Token válido para {}: {}", username, valid);
+            boolean usernameMatches = username.equals(userDetails.getUsername());
+            boolean notExpired = !isTokenExpired(token);
+            boolean valid = usernameMatches && notExpired;
+            
+            logger.debug("[JWT] Validación de token para {}: username matches={}, not expired={}, valid={}", 
+                username, usernameMatches, notExpired, valid);
+            
+            if (!valid) {
+                if (!usernameMatches) {
+                    logger.warn("[JWT] Token inválido: username no coincide. Token={}, UserDetails={}", 
+                        username, userDetails.getUsername());
+                }
+                if (!notExpired) {
+                    logger.warn("[JWT] Token inválido: token expirado para usuario {}", username);
+                }
+            }
+            
             return valid;
         } catch (Exception e) {
-            logger.error("[JWT] Error validando token: {}", e.getMessage());
+            logger.error("[JWT] Error validando token: {} - {}", e.getClass().getSimpleName(), e.getMessage());
             return false;
         }
     }

@@ -40,27 +40,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
         
-        log.debug("[JWT-FILTER] Request URI: {}", request.getRequestURI());
-        log.debug("[JWT-FILTER] Authorization header: {}", authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "NULL");
+        String requestUri = request.getRequestURI();
+        log.info("[JWT-FILTER] Request: {} {}", request.getMethod(), requestUri);
+        
+        // Permitir rutas públicas sin autenticación
+        if (requestUri.startsWith("/api/auth/") || 
+            requestUri.equals("/actuator/health") ||
+            requestUri.startsWith("/v3/api-docs") ||
+            requestUri.startsWith("/swagger-ui")) {
+            log.debug("[JWT-FILTER] Ruta pública, saltando autenticación: {}", requestUri);
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
+        log.debug("[JWT-FILTER] Authorization header presente: {}", authHeader != null);
+        if (authHeader != null) {
+            log.debug("[JWT-FILTER] Header value (primeros 30 chars): {}", 
+                authHeader.substring(0, Math.min(30, authHeader.length())));
+        }
         
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.debug("[JWT-FILTER] No Bearer token found, continuing filter chain");
+            log.warn("[JWT-FILTER] No Bearer token encontrado para ruta protegida: {}", requestUri);
             filterChain.doFilter(request, response);
             return;
         }
         
         jwt = authHeader.substring(7);
+        log.debug("[JWT-FILTER] Token JWT extraído (longitud: {})", jwt.length());
         
         try {
             username = jwtService.extractUsername(jwt);
-            log.debug("[JWT-FILTER] Extracted username: {}", username);
+            log.info("[JWT-FILTER] Username extraído del token: {}", username);
             
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                log.debug("[JWT-FILTER] Cargando detalles del usuario: {}", username);
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                log.debug("[JWT-FILTER] Loaded user: {}", userDetails.getUsername());
+                log.debug("[JWT-FILTER] Usuario cargado con authorities: {}", userDetails.getAuthorities());
                 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    log.debug("[JWT-FILTER] Token is VALID, setting authentication");
+                    log.info("[JWT-FILTER] ✓ Token VÁLIDO - Autenticando usuario: {}", username);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -68,12 +86,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("[JWT-FILTER] Authentication establecida en SecurityContext");
                 } else {
-                    log.warn("[JWT-FILTER] Token is INVALID for user: {}", username);
+                    log.error("[JWT-FILTER] ✗ Token INVÁLIDO para usuario: {}", username);
                 }
+            } else if (username != null) {
+                log.debug("[JWT-FILTER] Usuario ya autenticado en el contexto de seguridad");
             }
         } catch (Exception e) {
-            log.error("[JWT-FILTER] Error en autenticación JWT: {}", e.getMessage());
+            log.error("[JWT-FILTER] ✗ Excepción en autenticación JWT: {} - {}", 
+                e.getClass().getSimpleName(), e.getMessage(), e);
         }
         
         filterChain.doFilter(request, response);
