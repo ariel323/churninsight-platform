@@ -3,11 +3,13 @@ package com.churninsight.controller;
 import com.churninsight.model.PredictionHistory;
 import com.churninsight.model.PredictionHistoryRepository;
 import com.churninsight.service.ChurnModelClient;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
+@Validated
 @RequestMapping("/api/churn")
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080"})
 public class ChurnController {
@@ -36,7 +39,7 @@ public class ChurnController {
      * Endpoint para realizar predicciones de churn
      */
     @PostMapping("/predict")
-    public ResponseEntity<?> predictChurn(@RequestBody ChurnPredictionRequest request) {
+    public ResponseEntity<?> predictChurn(@Valid @RequestBody ChurnPredictionRequest request) {
         try {
             logger.info("[ChurnController] Predicción solicitada por usuario autenticado");
             
@@ -50,6 +53,13 @@ public class ChurnController {
             
             // Llamar al servicio de ML para obtener la predicción
             Map<String, Object> prediction = churnModelClient.predict(request);
+
+            // Extraer probabilidad con conversión segura
+            Object probabilityObj = prediction.get("churn_probability");
+            if (!(probabilityObj instanceof Number)) {
+                throw new IllegalStateException("Respuesta del modelo inválida: falta churn_probability numérica");
+            }
+            double probability = ((Number) probabilityObj).doubleValue();
             
             // Generar customer ID único
             String customerId = UUID.randomUUID().toString().substring(0, 8);
@@ -57,9 +67,9 @@ public class ChurnController {
             // Guardar en historial
             PredictionHistory history = new PredictionHistory();
             history.setCustomerId(customerId);
-            history.setChurnProbability((Double) prediction.get("churn_probability"));
+            history.setChurnProbability(probability);
             history.setAgeRisk(request.getAgeRisk());
-            history.setNumOfProducts((int) request.getNumOfProducts()); // Convertir a int
+            history.setNumOfProducts(request.getNumOfProducts() != null ? request.getNumOfProducts().intValue() : 0);
             history.setInactivo4070(request.getInactivo4070());
             history.setProductsRiskFlag(request.getProductsRiskFlag());
             history.setCountryRiskFlag(request.getCountryRiskFlag());

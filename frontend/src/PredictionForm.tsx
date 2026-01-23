@@ -182,7 +182,12 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                     errors.age?.message || "Ingrese la edad del cliente"
                   }
                   InputProps={{
-                    inputProps: { min: 18, max: 100 },
+                    inputProps: {
+                      min: 18,
+                      max: 100,
+                      step: 1,
+                      inputMode: "numeric",
+                    },
                   }}
                 />
               )}
@@ -213,7 +218,12 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                     "Cantidad de productos bancarios activos"
                   }
                   InputProps={{
-                    inputProps: { min: 1, max: 10 },
+                    inputProps: {
+                      min: 1,
+                      max: 10,
+                      step: 1,
+                      inputMode: "numeric",
+                    },
                   }}
                 />
               )}
@@ -310,7 +320,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                   helperText={
                     errors.balance?.message || "Saldo actual del cliente"
                   }
-                  InputProps={{ inputProps: { min: 0 } }}
+                  InputProps={{
+                    inputProps: { min: 0, step: 0.01, inputMode: "decimal" },
+                  }}
                 />
               )}
             />
@@ -337,7 +349,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                   helperText={
                     errors.estimatedSalary?.message || "Salario anual estimado"
                   }
-                  InputProps={{ inputProps: { min: 0 } }}
+                  InputProps={{
+                    inputProps: { min: 0, step: 0.01, inputMode: "decimal" },
+                  }}
                 />
               )}
             />
@@ -352,7 +366,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
               rules={{
                 required: "La antigüedad es obligatoria",
                 min: { value: 0, message: "No puede ser negativa" },
-                max: { value: 10, message: "Máximo 10 años" },
+                max: { value: 40, message: "Máximo 40 años" },
               }}
               render={({ field }) => (
                 <TextField
@@ -363,7 +377,14 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                   placeholder="Ej: 5"
                   error={!!errors.tenure}
                   helperText={errors.tenure?.message || "Años como cliente"}
-                  InputProps={{ inputProps: { min: 0, max: 10 } }}
+                  InputProps={{
+                    inputProps: {
+                      min: 0,
+                      max: 40,
+                      step: 1,
+                      inputMode: "numeric",
+                    },
+                  }}
                 />
               )}
             />
@@ -392,7 +413,14 @@ const PredictionForm: React.FC<PredictionFormProps> = ({
                     errors.creditScore?.message ||
                     "Score de crédito del cliente (300-850)"
                   }
-                  InputProps={{ inputProps: { min: 300, max: 850 } }}
+                  InputProps={{
+                    inputProps: {
+                      min: 300,
+                      max: 850,
+                      step: 1,
+                      inputMode: "numeric",
+                    },
+                  }}
                 />
               )}
             />

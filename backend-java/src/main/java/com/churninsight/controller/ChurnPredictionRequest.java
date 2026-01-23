@@ -1,32 +1,62 @@
 package com.churninsight.controller;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public class ChurnPredictionRequest {
-    private double ageRisk;
-    private double numOfProducts;
-    private double inactivo4070;
-    private double productsRiskFlag;
-    private double countryRiskFlag;
+
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "1.0")
+    private Double ageRisk;
+
+    @PositiveOrZero
+    private Double numOfProducts;
+
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "1.0")
+    private Double inactivo4070;
+
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "1.0")
+    private Double productsRiskFlag;
+
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "1.0")
+    private Double countryRiskFlag;
     
     // Nuevos campos (Fase 4)
+    @NotNull
     private Double balance;
+
+    @NotNull
     private Double estimatedSalary;
+
+    @NotBlank
     private String country;
+
+    @NotNull
+    @PositiveOrZero
     private Integer tenure;
+
+    @NotNull
     private Boolean isActiveMember;
 
     // Getters para campos originales
-    public double getAgeRisk() { return ageRisk; }
-    public double getNumOfProducts() { return numOfProducts; }
-    public double getInactivo4070() { return inactivo4070; }
-    public double getProductsRiskFlag() { return productsRiskFlag; }
-    public double getCountryRiskFlag() { return countryRiskFlag; }
+    public Double getAgeRisk() { return ageRisk; }
+    public Double getNumOfProducts() { return numOfProducts; }
+    public Double getInactivo4070() { return inactivo4070; }
+    public Double getProductsRiskFlag() { return productsRiskFlag; }
+    public Double getCountryRiskFlag() { return countryRiskFlag; }
     
     // Setters para campos originales
-    public void setAgeRisk(double ageRisk) { this.ageRisk = ageRisk; }
-    public void setNumOfProducts(double numOfProducts) { this.numOfProducts = numOfProducts; }
-    public void setInactivo4070(double inactivo4070) { this.inactivo4070 = inactivo4070; }
-    public void setProductsRiskFlag(double productsRiskFlag) { this.productsRiskFlag = productsRiskFlag; }
-    public void setCountryRiskFlag(double countryRiskFlag) { this.countryRiskFlag = countryRiskFlag; }
+    public void setAgeRisk(Double ageRisk) { this.ageRisk = ageRisk; }
+    public void setNumOfProducts(Double numOfProducts) { this.numOfProducts = numOfProducts; }
+    public void setInactivo4070(Double inactivo4070) { this.inactivo4070 = inactivo4070; }
+    public void setProductsRiskFlag(Double productsRiskFlag) { this.productsRiskFlag = productsRiskFlag; }
+    public void setCountryRiskFlag(Double countryRiskFlag) { this.countryRiskFlag = countryRiskFlag; }
     
     // Getters para nuevos campos
     public Double getBalance() { return balance; }
